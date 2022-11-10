@@ -3,5 +3,5 @@
 
 namespace help
 {
-	void output_help();
+	void output_help(int argc, char* argv[]);
 }

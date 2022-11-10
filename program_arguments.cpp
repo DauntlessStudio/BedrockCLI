@@ -2,82 +2,69 @@
 
 namespace
 {
-	static std::function _command = help::output_help;
-	static std::string_view _command_name = "help";
-	static std::vector<std::string_view> _filenames;
-	static int _indent_level = 4;
-	static std::string_view _directory;
-	static bool _should_remove = false;
-	static std::string_view _family_type;
+	static std::function<void(int argc, char* argv[])> _command = help::output_help;
+	static std::string _command_name = "help";
 }
 
 void program_arguments::parse(int argc, char* argv[])
 {
-	std::vector<std::string_view> command_list{ "cogr", "comp", "nent", "nblk", "dmgs" };
-	const std::vector<std::string_view> args(argv + 1, argv + argc);
+	cxxopts::Options options("bed", "Command line tool to help create bedrock addons");
+	options.add_options()
+		("h,help", "Print usage")
+		("bpath", "The path to the behavior pack root", cxxopts::value<std::string>())
+		("rpath", "The path to the resource pack root", cxxopts::value<std::string>())
+		("command", "The command to perform", cxxopts::value<std::string>());
+	options.parse_positional({"command"});
+	options.allow_unrecognised_options();
 
-	for (const auto& arg : args)
+	auto result = options.parse(argc, argv);
+	_command_name = result["command"].as<std::string>();
+
+	if (result.count("command"))
 	{
-		auto found_command = std::find(command_list.begin(), command_list.end(), arg);
-		if (found_command != command_list.end())
-		{
-			if (_command_name != "help")
-			{
-				throw std::runtime_error("bed: cannot use multiple commands!");
-			}
-			assign_command(arg, found_command - command_list.begin());
-			continue;
-		}
-		if (arg == "-d" || arg == "--directory")
-		{
-			if (!_directory.empty())
-			{
-				throw std::runtime_error("bed: cannot use -d/--directory twice!");
-			}
-			_directory = arg;
-		}
-		if (arg == "-f" || arg == "--family")
-		{
-			if (!_family_type.empty())
-			{
-				throw std::runtime_error("bed: cannot use -d/--directory twice!");
-			}
-			_family_type = arg;
-		}
-		if (arg == "-i" || arg == "--indent")
-		{
-			if (!_directory.empty())
-			{
-				throw std::runtime_error("bed: cannot use -d/--directory twice!");
-			}
-			_directory = arg;
-		}
+		assign_command(_command_name);
+	}
+
+	//TODO implement bpath and rpath options
+
+	// If the help argument is given we overwrite the assigned _command with help.
+	if (result.count("help"))
+	{
+		_command = help::output_help;
 	}
 }
 
-void program_arguments::run_command()
+void program_arguments::run_command(int argc, char* argv[])
 {
-	_command();
+	_command(argc, argv);
 }
 
-void program_arguments::assign_command(const std::string_view& arg, const int command_index)
+void program_arguments::assign_command(const std::string& arg)
 {
-	_command_name = arg;
+	std::vector<std::string> command_list{"cogr", "comp", "nent", "nitm", "nblk"};
+	auto it = std::find(command_list.begin(), command_list.end(), arg);
 
-	switch (command_index)
+	int index = std::distance(command_list.begin(), it);
+	switch (index)
 	{
-	case 0: // COGR
+	case 0: //COGR
+		std::cout << "Selected COGR" << std::endl;
 		break;
-	case 1: // COMP
+	case 1: //COMP
+		std::cout << "Selected COMP" << std::endl;
 		break;
-	case 2: // NENT
+	case 2: //NENT
+		std::cout << "Selected NENT" << std::endl;
 		break;
-	case 3: // NBLK
+	case 3: //NITM
+		std::cout << "Selected NITM" << std::endl;
+		_command = new_item::new_item;
 		break;
-	case 4: // DMGS
+	case 4: //NBLK
+		std::cout << "Selected NBLK" << std::endl;
 		break;
-	default:
-		_command = help::output_help;
+	default: //HELP
+		std::cout << "INVALID" << std::endl;
 		break;
 	}
 }
