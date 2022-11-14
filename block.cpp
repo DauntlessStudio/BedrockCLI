@@ -35,15 +35,16 @@ void block::new_block(int argc, char* argv[])
 			nlohmann::ordered_json loot_table;
 			loot_table["pools"][0]["rolls"] = 1;
 			loot_table["pools"][0]["entries"][0] = { {"type", "item"}, {"name", name}, {"weight", 1} };
-			file_manager::write_json_to_file(loot_table, file_manager::get_bp_path() + "\\loot_tables\\blocks\\" + filename + ".json");
+			file_manager::write_json_to_file(loot_table, file_manager::get_bp_path() + "\\loot_tables\\blocks\\" + filename + ".json", result["indent"].as<int>());
 		}
 		block_bp["minecraft:block"]["components"]["minecraft:block_light_emission"] = std::clamp(result["emissive"].as<double>(), 0.0, 1.0);
+		block_bp["minecraft:block"]["description"]["identifier"] = name;
 
-		file_manager::write_json_to_file(block_bp, file_manager::get_bp_path() + "\\blocks\\" + filename + ".json");
+		file_manager::write_json_to_file(block_bp, file_manager::get_bp_path() + "\\blocks\\" + filename + ".json", result["indent"].as<int>());
 
 		//modify textures/block_texture.json
 		nlohmann::ordered_json item_texture = file_manager::read_json_from_file(file_manager::get_rp_path() + "\\textures\\terrain_texture.json", rp_terrain_tex);
 		item_texture["texture_data"][filename] = { {"textures", "textures/blocks/" + name} };
-		file_manager::write_json_to_file(item_texture, file_manager::get_rp_path() + "\\textures\\terrain_texture.json");
+		file_manager::write_json_to_file(item_texture, file_manager::get_rp_path() + "\\textures\\terrain_texture.json", result["indent"].as<int>());
 	}
 }

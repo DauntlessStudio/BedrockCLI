@@ -140,6 +140,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="entity.cpp" />
     <ClCompile Include="file_manager.cpp" />
     <ClCompile Include="help.cpp" />
     <ClCompile Include="main.cpp" />
@@ -149,6 +150,7 @@
     <ClCompile Include="utilities.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="entity.hpp" />
     <ClInclude Include="extern\cxxopts\include\cxxopts.hpp" />
     <ClInclude Include="extern\nlohmann\single_include\nlohmann\json.hpp" />
     <ClInclude Include="file_manager.hpp" />

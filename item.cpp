@@ -37,12 +37,12 @@ void item::new_item(int argc, char* argv[])
 
 		std::string filename = utilities::split(name, ':').back();
 
-		file_manager::write_json_to_file(item_bp, file_manager::get_bp_path() + "\\items\\" + filename + ".json");
-		file_manager::write_json_to_file(item_rp, file_manager::get_rp_path() + "\\items\\" + filename + ".json");
+		file_manager::write_json_to_file(item_bp, file_manager::get_bp_path() + "\\items\\" + filename + ".json", result["indent"].as<int>());
+		file_manager::write_json_to_file(item_rp, file_manager::get_rp_path() + "\\items\\" + filename + ".json", result["indent"].as<int>());
 
 		//modify textures/item_texture.json
 		nlohmann::ordered_json item_texture = file_manager::read_json_from_file(file_manager::get_rp_path() + "\\textures\\item_texture.json", rp_item_texture);
 		item_texture["texture_data"][filename] = { {"textures", "textures/items/" + name} };
-		file_manager::write_json_to_file(item_texture, file_manager::get_rp_path() + "\\textures\\item_texture.json");
+		file_manager::write_json_to_file(item_texture, file_manager::get_rp_path() + "\\textures\\item_texture.json", result["indent"].as<int>());
 	}
 }

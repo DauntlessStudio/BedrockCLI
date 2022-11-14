@@ -55,6 +55,7 @@ void program_arguments::assign_command(const std::string& arg)
 		break;
 	case 2: //NENT
 		std::cout << "Selected NENT" << std::endl;
+		_command = entity::new_entity;
 		break;
 	case 3: //NITM
 		std::cout << "Selected NITM" << std::endl;
