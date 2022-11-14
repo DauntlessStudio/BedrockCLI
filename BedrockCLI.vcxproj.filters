@@ -24,7 +24,7 @@
     <ClCompile Include="help.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="new_item.cpp">
+    <ClCompile Include="item.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="file_manager.cpp">
@@ -33,7 +33,7 @@
     <ClCompile Include="utilities.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="new_block.cpp">
+    <ClCompile Include="block.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -53,7 +53,7 @@
     <ClInclude Include="extern\nlohmann\single_include\nlohmann\json.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="new_item.hpp">
+    <ClInclude Include="item.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="file_manager.hpp">
@@ -62,7 +62,7 @@
     <ClInclude Include="utilities.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="new_block.hpp">
+    <ClInclude Include="block.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

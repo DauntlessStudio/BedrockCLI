@@ -1,11 +1,11 @@
-#include "new_item.hpp"
+#include "item.hpp"
 
 auto bp_default_item = nlohmann::ordered_json::parse(R"({ "format_version": "1.10.0", "minecraft:item": { "description": { "identifier": "namespace:name" }, "components": { "minecraft:max_stack_size": 64 } } })");
 auto bp_effect_item = nlohmann::ordered_json::parse(R"({ "format_version": "1.10.0", "minecraft:item": { "description": { "identifier": "namespace:name" }, "components": { "minecraft:use_duration": 30000, "minecraft:max_stack_size": 64, "minecraft:food": { "nutrition": 0, "saturation_modifier": "supernatural", "can_always_eat": true } } } })");
 auto rp_default_item = nlohmann::ordered_json::parse(R"({ "format_version": "1.10.0", "minecraft:item": { "description": { "identifier": "namespace:name", "category": "Equipment" }, "components": { "minecraft:icon": "name", "minecraft:render_offsets": "apple" } } })");
 auto rp_item_texture = nlohmann::ordered_json::parse(R"({ "texture_name": "atlas.items", "texture_data": { } })");
 
-void new_item::new_item(int argc, char* argv[])
+void item::new_item(int argc, char* argv[])
 {
 	//parse arguments
 	cxxopts::Options options("bed", "Command line tool to help create bedrock addons");

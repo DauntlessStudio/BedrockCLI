@@ -5,7 +5,7 @@
 #include "file_manager.hpp"
 #include "utilities.hpp"
 
-namespace new_item
+namespace block
 {
-	void new_item(int argc, char* argv[]);
+	void new_block(int argc, char* argv[]);
 }

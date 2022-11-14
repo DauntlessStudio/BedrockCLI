@@ -1,9 +1,9 @@
-#include "new_block.hpp"
+#include "block.hpp"
 
 auto bp_default_block = nlohmann::ordered_json::parse(R"({ "format_version": "1.12.0", "minecraft:block": { "description": { "identifier": "namespace:name", "register_to_creative_menu": true }, "components": { "minecraft:block_light_emission": 0, "minecraft:destroy_time": 2.0, "minecraft:explosion_resistance": 1, "minecraft:friction": 0.6, "minecraft:loot": "loot_tables/blocks/empty.json", "minecraft:map_color": "#B0B0B0" } } })");
 auto rp_terrain_tex = nlohmann::ordered_json::parse(R"({ "num_mip_levels" : 4, "padding" : 8, "resource_pack_name" : "vanilla", "texture_data" : { }, "texture_name" : "atlas.terrain" })");
 
-void new_block::new_block(int argc, char* argv[])
+void block::new_block(int argc, char* argv[])
 {
 	//parse arguments
 	cxxopts::Options options("bed", "Command line tool to help create bedrock addons");
