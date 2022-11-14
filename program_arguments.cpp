@@ -62,6 +62,7 @@ void program_arguments::assign_command(const std::string& arg)
 		break;
 	case 4: //NBLK
 		std::cout << "Selected NBLK" << std::endl;
+		_command = new_block::new_block;
 		break;
 	default: //HELP
 		std::cout << "INVALID" << std::endl;

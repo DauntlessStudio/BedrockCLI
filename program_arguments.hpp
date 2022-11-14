@@ -6,6 +6,7 @@
 #include <map>
 #include "help.hpp"
 #include "new_item.hpp"
+#include "new_block.hpp"
 #include <stdexcept>
 #include <iostream>
 #include "extern\cxxopts\include\cxxopts.hpp"

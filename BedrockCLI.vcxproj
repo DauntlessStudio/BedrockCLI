@@ -143,6 +143,7 @@
     <ClCompile Include="file_manager.cpp" />
     <ClCompile Include="help.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="new_block.cpp" />
     <ClCompile Include="new_item.cpp" />
     <ClCompile Include="program_arguments.cpp" />
     <ClCompile Include="utilities.cpp" />
@@ -153,6 +154,7 @@
     <ClInclude Include="file_manager.hpp" />
     <ClInclude Include="help.hpp" />
     <ClInclude Include="main.hpp" />
+    <ClInclude Include="new_block.hpp" />
     <ClInclude Include="new_item.hpp" />
     <ClInclude Include="program_arguments.hpp" />
     <ClInclude Include="utilities.hpp" />
