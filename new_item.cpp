@@ -3,6 +3,7 @@
 auto bp_default_item = nlohmann::ordered_json::parse(R"({ "format_version": "1.10.0", "minecraft:item": { "description": { "identifier": "namespace:name" }, "components": { "minecraft:max_stack_size": 64 } } })");
 auto bp_effect_item = nlohmann::ordered_json::parse(R"({ "format_version": "1.10.0", "minecraft:item": { "description": { "identifier": "namespace:name" }, "components": { "minecraft:use_duration": 30000, "minecraft:max_stack_size": 64, "minecraft:food": { "nutrition": 0, "saturation_modifier": "supernatural", "can_always_eat": true } } } })");
 auto rp_default_item = nlohmann::ordered_json::parse(R"({ "format_version": "1.10.0", "minecraft:item": { "description": { "identifier": "namespace:name", "category": "Equipment" }, "components": { "minecraft:icon": "name", "minecraft:render_offsets": "apple" } } })");
+auto rp_item_texture = nlohmann::ordered_json::parse(R"({ "texture_name": "atlas.items", "texture_data": { } })");
 
 void new_item::new_item(int argc, char* argv[])
 {
@@ -34,9 +35,14 @@ void new_item::new_item(int argc, char* argv[])
 
 		item_rp["minecraft:item"]["description"]["identifier"] = name;
 
-		std::string filename = utilities::split(name, ':').back() + ".json";
+		std::string filename = utilities::split(name, ':').back();
 
-		file_manager::write_json_to_file(item_bp, file_manager::get_bp_path() + "\\items\\" + filename);
-		file_manager::write_json_to_file(item_rp, file_manager::get_rp_path() + "\\items\\" + filename);
+		file_manager::write_json_to_file(item_bp, file_manager::get_bp_path() + "\\items\\" + filename + ".json");
+		file_manager::write_json_to_file(item_rp, file_manager::get_rp_path() + "\\items\\" + filename + ".json");
+
+		//modify textures/item_texture.json
+		nlohmann::ordered_json item_texture = file_manager::read_json_from_file(file_manager::get_rp_path() + "\\textures\\item_texture.json", rp_item_texture);
+		item_texture["texture_data"][filename] = { {"textures", "textures/items/" + name} };
+		file_manager::write_json_to_file(item_texture, file_manager::get_rp_path() + "\\textures\\item_texture.json");
 	}
 }

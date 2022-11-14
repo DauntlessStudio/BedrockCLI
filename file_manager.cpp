@@ -5,6 +5,8 @@ namespace
 	std::string project_root;
 	std::string behavior_pack;
 	std::string resource_pack;
+	std::string bp_subname = "behavior_packs";
+	std::string rp_subname = "resource_packs";
 }
 
 void file_manager::write_json_to_file(const nlohmann::ordered_json& object, const std::string& path, int indent)
@@ -23,6 +25,30 @@ void file_manager::write_json_to_file(const nlohmann::ordered_json& object, cons
 
 	std::cout << "Saved JSON at: " << path << std::endl;
 	output.close();
+}
+
+nlohmann::ordered_json file_manager::read_json_from_file(const std::string& path, const nlohmann::ordered_json& default_object)
+{
+	if (!std::filesystem::exists(path))
+	{
+		return default_object;
+	}
+
+	nlohmann::ordered_json object;
+	std::ifstream input;
+	input.open(path);
+
+	try
+	{
+		object = nlohmann::ordered_json::parse(input, nullptr, true, true);
+	}
+	catch (const std::exception& e)
+	{
+		std::cerr << e.what() << std::endl;
+	}
+
+	input.close();
+	return object;
 }
 
 void file_manager::make_directory(const std::string& path)
@@ -58,6 +84,8 @@ std::string file_manager::get_project_root()
 	{
 		std::string path = std::string(buf) + "\\AppData\\Local\\Packages\\Microsoft.MinecraftUWP_8wekyb3d8bbwe\\LocalState\\games\\com.mojang";
 		free(buf);
+		bp_subname = "development_behavior_packs";
+		rp_subname = "development_resource_packs";
 		project_root = path;
 		return path;
 	}
