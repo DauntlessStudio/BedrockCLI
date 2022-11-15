@@ -8,8 +8,8 @@
 namespace entity
 {
 	void new_entity(int argc, char* argv[]);
-
 	void component_group(int argc, char* argv[]);
+	void component(int argc, char* argv[]);
 
 	class entity
 	{
@@ -28,13 +28,18 @@ namespace entity
 		const bool contains_family_type(const std::vector<std::string>& families);
 
 		void add_component_group(const nlohmann::ordered_json& component_group);
-		void add_event(const std::string& event_name, bool remove_event);
-
 		void remove_component_group(const std::string& group_name);
+
+		void add_component(const nlohmann::ordered_json& component);
+		void remove_component(const std::string& component_name);
+
+		void add_event(const std::string& event_name, bool remove_event);
 		void remove_event(const std::string& name);
 
 		void write_entity(int indent = 4);
 
 		const nlohmann::ordered_json get_json();
 	};
+
+	std::vector<entity> filter_by_family(std::vector<entity>& entities, std::vector<std::string> families);
 }

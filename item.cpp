@@ -8,19 +8,21 @@ auto rp_item_texture = nlohmann::ordered_json::parse(R"({ "texture_name": "atlas
 void item::new_item(int argc, char* argv[])
 {
 	//parse arguments
-	cxxopts::Options options("bed", "Command line tool to help create bedrock addons");
+	cxxopts::Options options("nitm", "Create new items");
 	options.add_options()
+		("h,help", "View help")
 		("s,stack", "Maximum stack size", cxxopts::value<int>()->default_value("64"))
 		("i,indent", "JSON file indent", cxxopts::value<int>()->default_value("4"))
 		("e,edible", "Is edible")
 		("n,name", "Item names to add", cxxopts::value<std::vector<std::string>>());
 
+	options.allow_unrecognised_options();
 	auto result = options.parse(argc, argv);
 
 	//if arguments are invalid, print help message
-	if (!result.count("name"))
+	if (!result.count("name") || result.count("help"))
 	{
-		help::output_help(argc, argv);
+		std::cout << options.help() << std::endl;
 		return;
 	}
 

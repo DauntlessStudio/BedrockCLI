@@ -5,6 +5,7 @@
 #include <vector>
 #include <filesystem>
 #include "extern\nlohmann\single_include\nlohmann\json.hpp"
+#include "utilities.hpp"
 
 namespace file_manager
 {
@@ -14,5 +15,8 @@ namespace file_manager
 	std::string get_project_root();
 	std::string get_bp_path();
 	std::string get_rp_path();
+	void set_bp_path(const std::string& path);
+	void set_rp_path(const std::string& path);
 	std::vector<std::string> get_files_in_directory(const std::string& path);
+	std::vector<std::string> get_files_in_directory(const std::string& path, std::vector<std::string> filters);
 }

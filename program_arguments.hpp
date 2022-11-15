@@ -17,4 +17,5 @@ namespace program_arguments
 	void parse(int argc, char* argv[]);
 	void run_command(int argc, char* argv[]);
 	void assign_command(const std::string& arg);
+	std::string get_options_help();
 }

@@ -96,6 +96,7 @@ std::string file_manager::get_bp_path()
 {
 	if (!behavior_pack.empty())
 	{
+		std::cout << behavior_pack << std::endl;
 		return behavior_pack;
 	}
 
@@ -104,6 +105,7 @@ std::string file_manager::get_bp_path()
 		for (auto const& dir_entry : std::filesystem::directory_iterator(get_project_root() + "behavior_packs"))
 		{
 			behavior_pack = dir_entry.path().u8string();
+			std::cout << behavior_pack << std::endl;
 			return behavior_pack;
 		}
 	}
@@ -128,6 +130,18 @@ std::string file_manager::get_rp_path()
 	return std::string();
 }
 
+void file_manager::set_bp_path(const std::string& path)
+{
+	behavior_pack = path;
+	utilities::replace_all(behavior_pack, "/", "\\");
+}
+
+void file_manager::set_rp_path(const std::string& path)
+{
+	resource_pack = path;
+	utilities::replace_all(resource_pack, "/", "\\");
+}
+
 std::vector<std::string> file_manager::get_files_in_directory(const std::string& path)
 {
 	if (!std::filesystem::exists(path))
@@ -141,6 +155,39 @@ std::vector<std::string> file_manager::get_files_in_directory(const std::string&
 		if (file.is_regular_file())
 		{
 			files.push_back(file.path().u8string());
+		}
+	}
+	return files;
+}
+
+std::vector<std::string> file_manager::get_files_in_directory(const std::string& path, std::vector<std::string> filters)
+{
+	filters.erase(std::remove(filters.begin(), filters.end(), ""), filters.end());
+
+	if (filters.size() == 0)
+	{
+		return get_files_in_directory(path);
+	}
+
+	if (!std::filesystem::exists(path))
+	{
+		return std::vector<std::string>();
+	}
+
+	std::vector<std::string> files;
+	for (auto const& file : std::filesystem::recursive_directory_iterator(path))
+	{
+		if (file.is_regular_file())
+		{
+			std::string f_string = file.path().u8string();
+			for (auto const& filter : filters)
+			{
+				if (utilities::split(f_string, '\\').back() == utilities::split(filter, '\\').back())
+				{
+					files.push_back(f_string);
+					break;
+				}
+			}
 		}
 	}
 	return files;

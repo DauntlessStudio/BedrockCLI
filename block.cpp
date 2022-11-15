@@ -6,19 +6,21 @@ auto rp_terrain_tex = nlohmann::ordered_json::parse(R"({ "num_mip_levels" : 4, "
 void block::new_block(int argc, char* argv[])
 {
 	//parse arguments
-	cxxopts::Options options("bed", "Command line tool to help create bedrock addons");
+	cxxopts::Options options("nblk", "Create new blocks");
 	options.add_options()
+		("h,help", "View help")
 		("l,loot", "Add loot table")
 		("i,indent", "JSON file indent", cxxopts::value<int>()->default_value("4"))
 		("e,emissive", "Block emits light", cxxopts::value<double>()->default_value("0.0"))
 		("n,name", "Block names to add", cxxopts::value<std::vector<std::string>>());
 
+	options.allow_unrecognised_options();
 	auto result = options.parse(argc, argv);
 
 	//if arguments are invalid, print help message
-	if (!result.count("name"))
+	if (!result.count("name") || result.count("help"))
 	{
-		help::output_help(argc, argv);
+		std::cout << options.help() << std::endl;
 		return;
 	}
 

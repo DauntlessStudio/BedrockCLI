@@ -32,6 +32,19 @@ std::vector<std::string> utilities::split(std::string val, const std::string& de
     return result;
 }
 
+void utilities::replace_all(std::string& str, const std::string& from, const std::string& to)
+{
+    if (from.empty())
+        return;
+
+    size_t start_pos = 0;
+    while ((start_pos = str.find(from, start_pos)) != std::string::npos)
+    {
+        str.replace(start_pos, from.length(), to);
+        start_pos += to.length();
+    }
+}
+
 
 template<class T>
 void utilities::push_back_if(std::vector<T>& vector, const T& val, const bool& condition)

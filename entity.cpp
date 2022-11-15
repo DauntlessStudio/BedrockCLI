@@ -9,20 +9,22 @@ auto rp_geo_default = nlohmann::ordered_json::parse(R"({ "format_version": "1.18
 void entity::new_entity(int argc, char* argv[])
 {
 	//parse arguments
-	cxxopts::Options options("bed", "Command line tool to help create bedrock addons");
+	cxxopts::Options options("nent", "Create new entities");
 	options.add_options()
-		("e,enemy", "Hostile enemy")
-		("p,passive", "Passive mob")
+		("h,help", "View help")
+		("e,enemy", "Create hostile enemy")
+		("p,passive", "Create passive mob")
 		("m,model", "Create new model with entity")
 		("i,indent", "JSON file indent", cxxopts::value<int>()->default_value("4"))
 		("n,name", "Block names to add", cxxopts::value<std::vector<std::string>>());
 
+	options.allow_unrecognised_options();
 	auto result = options.parse(argc, argv);
 
 	//if arguments are invalid, print help message
-	if (!result.count("name"))
+	if (!result.count("name") || result.count("help"))
 	{
-		help::output_help(argc, argv);
+		std::cout << options.help() << std::endl;
 		return;
 	}
 
@@ -58,57 +60,50 @@ void entity::new_entity(int argc, char* argv[])
 void entity::component_group(int argc, char* argv[])
 {
 	//parse arguments
-	cxxopts::Options options("bed", "Command line tool to help create bedrock addons");
+	cxxopts::Options options("cogr", "Attaches or removes component groups for the entities");
 	options.add_options()
-		("g,group", "Component group", cxxopts::value<std::string>())
+		("h,help", "View help")
+		("g,group", "The component group to add in JSON format, or the name of the group to remove", cxxopts::value<std::string>())
 		("i,indent", "JSON file indent", cxxopts::value<int>()->default_value("4"))
-		("f,family", "Family types to modify", cxxopts::value<std::vector<std::string>>())
+		("f,family", "Family types to modify", cxxopts::value<std::vector<std::string>>()->default_value(""))
 		("d,directory", "Subdirectory to modify", cxxopts::value <std::string>()->default_value(""))
 		("r,remove", "Remove group")
-		("n,name", "Filenames of entities to modify", cxxopts::value<std::vector<std::string>>()->default_value(""));
+		("n,name", "Filenames of entities to modify, i.e. player.json", cxxopts::value<std::vector<std::string>>()->default_value(""));
 
+	options.allow_unrecognised_options();
 	auto result = options.parse(argc, argv);
 
 	//if arguments are invalid, print help message
-	if (!result.count("group"))
+	if (!result.count("group") || result.count("help"))
 	{
-		help::output_help(argc, argv);
+		std::cout << options.help() << std::endl;
+		return;
+	}
+
+	nlohmann::ordered_json group;
+	try
+	{
+		group = nlohmann::ordered_json::parse(result["group"].as<std::string>());
+	}
+	catch (const std::exception& e)
+	{
+		std::cerr << e.what() << std::endl;
 		return;
 	}
 
 	std::vector<entity> entities;
 
-	for (const auto& file : file_manager::get_files_in_directory(file_manager::get_bp_path() + "\\entities\\" + result["directory"].as<std::string>()))
+	for (const auto& file : file_manager::get_files_in_directory(file_manager::get_bp_path() + "\\entities\\" + result["directory"].as<std::string>(), result["name"].as<std::vector<std::string>>()))
 	{
-		if (result.count("name") && std::find(result["name"].as<std::vector<std::string>>().begin(), result["name"].as<std::vector<std::string>>().end(), utilities::split(file, "\\entities\\").back()) != result["name"].as<std::vector<std::string>>().end())
-		{
-			entities.push_back(entity(file));
-		}
-		else if (!result.count("name"))
-		{
-			entities.push_back(entity(file));
-		}
+		entities.push_back(entity(file));
 	}
 
 	//filter entity list by family types
-	if (result.count("family"))
-	{
-		std::vector<entity> filtered_entities;
-		for (auto& ent : entities)
-		{
-			if (ent.contains_family_type(result["family"].as<std::vector<std::string>>()))
-			{
-				filtered_entities.push_back(ent);
-			}
-		}
-
-		entities = filtered_entities;
-	}
+	entities = filter_by_family(entities, result["family"].as<std::vector<std::string>>());
 
 	//add component group to entity list
 	if (!result.count("remove"))
 	{
-		nlohmann::ordered_json group = nlohmann::ordered_json::parse(result["group"].as<std::string>());
 		for (auto& ent : entities)
 		{
 			ent.add_component_group(group);
@@ -125,6 +120,90 @@ void entity::component_group(int argc, char* argv[])
 		ent.remove_event(result["group"].as<std::string>());
 		ent.write_entity(result["indent"].as<int>());
 	}
+}
+
+void entity::component(int argc, char* argv[])
+{
+	//parse arguments
+	cxxopts::Options options("comp", "Attaches or removes components for the entites");
+	options.add_options()
+		("h,help", "View help")
+		("c,component", "Component to add in JSON format, or the name of the component to remove", cxxopts::value<std::string>())
+		("i,indent", "JSON file indent", cxxopts::value<int>()->default_value("4"))
+		("f,family", "Family types to modify", cxxopts::value<std::vector<std::string>>()->default_value(""))
+		("d,directory", "Subdirectory to modify", cxxopts::value <std::string>()->default_value(""))
+		("r,remove", "Remove component")
+		("n,name", "Filenames of entities to modify", cxxopts::value<std::vector<std::string>>()->default_value(""));
+
+	options.allow_unrecognised_options();
+	auto result = options.parse(argc, argv);
+
+	//if arguments are invalid, print help message
+	if (!result.count("component") || result.count("help"))
+	{
+		std::cout << options.help() << std::endl;
+		return;
+	}
+
+	nlohmann::ordered_json component;
+	try
+	{
+		component = nlohmann::ordered_json::parse(result["component"].as<std::string>());
+	}
+	catch (const std::exception& e)
+	{
+		std::cerr << e.what() << std::endl;
+		return;
+	}
+
+	std::vector<entity> entities;
+
+	for (const auto& file : file_manager::get_files_in_directory(file_manager::get_bp_path() + "\\entities\\" + result["directory"].as<std::string>(), result["name"].as<std::vector<std::string>>()))
+	{
+		entities.push_back(entity(file));
+	}
+
+	//filter entity list by family types
+	entities = filter_by_family(entities, result["family"].as<std::vector<std::string>>());
+
+	//add component to entity list
+	if (!result.count("remove"))
+	{
+		for (auto& ent : entities)
+		{
+			ent.add_component(component);
+			ent.write_entity(result["indent"].as<int>());
+		}
+		return;
+	}
+
+	//remove component group from entity list
+	for (auto& ent : entities)
+	{
+		ent.remove_component_group(result["component"].as<std::string>());
+		ent.write_entity(result["indent"].as<int>());
+	}
+}
+
+std::vector<entity::entity> entity::filter_by_family(std::vector<entity>& entities, std::vector<std::string> families)
+{
+	families.erase(std::remove(families.begin(), families.end(), ""), families.end());
+
+	if (families.size() == 0)
+	{
+		return entities;
+	}
+
+	std::vector<entity> filtered_entities;
+	for (auto& ent : entities)
+	{
+		if (ent.contains_family_type(families))
+		{
+			filtered_entities.push_back(ent);
+		}
+	}
+
+	return filtered_entities;
 }
 
 entity::entity::entity() : entity_json(nlohmann::ordered_json()) {}
@@ -177,6 +256,34 @@ void entity::entity::add_component_group(const nlohmann::ordered_json& component
 	}
 }
 
+void entity::entity::remove_component_group(const std::string& group_name)
+{
+	entity_json["minecraft:entity"]["component_groups"].erase(group_name);
+}
+
+void entity::entity::add_component(const nlohmann::ordered_json& component)
+{
+	try
+	{
+		entity_json["minecraft:entity"]["components"][component.items().begin().key()] = component.items().begin().value();
+	}
+	catch (const std::exception& e)
+	{
+		std::cerr << e.what() << std::endl;
+	}
+}
+
+void entity::entity::remove_component(const std::string& component_name)
+{
+	entity_json["minecraft:entity"]["components"].erase(component_name);
+}
+
+void entity::entity::remove_event(const std::string& name)
+{
+	entity_json["minecraft:entity"]["events"].erase("add_" + name);
+	entity_json["minecraft:entity"]["events"].erase("remove_" + name);
+}
+
 void entity::entity::add_event(const std::string& event_name, bool remove_event)
 {
 	entity_json["minecraft:entity"]["events"]["add_" + event_name] = { {"add", {{"component_groups", {event_name}}}} };
@@ -184,17 +291,6 @@ void entity::entity::add_event(const std::string& event_name, bool remove_event)
 	{
 		entity_json["minecraft:entity"]["events"]["remove_" + event_name] = { {"remove", {{"component_groups", {event_name}}}} };
 	}
-}
-
-void entity::entity::remove_component_group(const std::string& group_name)
-{
-	entity_json["minecraft:entity"]["component_groups"].erase(group_name);
-}
-
-void entity::entity::remove_event(const std::string& name)
-{
-	entity_json["minecraft:entity"]["events"].erase("add_" + name);
-	entity_json["minecraft:entity"]["events"].erase("remove_" + name);
 }
 
 void entity::entity::write_entity(int indent)
