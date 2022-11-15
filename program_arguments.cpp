@@ -52,6 +52,7 @@ void program_arguments::assign_command(const std::string& arg)
 		break;
 	case 1: //COMP
 		std::cout << "Selected COMP" << std::endl;
+		_command = entity::component_group;
 		break;
 	case 2: //NENT
 		std::cout << "Selected NENT" << std::endl;

@@ -127,3 +127,21 @@ std::string file_manager::get_rp_path()
 	}
 	return std::string();
 }
+
+std::vector<std::string> file_manager::get_files_in_directory(const std::string& path)
+{
+	if (!std::filesystem::exists(path))
+	{
+		return std::vector<std::string>();
+	}
+
+	std::vector<std::string> files;
+	for (auto const& file : std::filesystem::recursive_directory_iterator(path))
+	{
+		if (file.is_regular_file())
+		{
+			files.push_back(file.path().u8string());
+		}
+	}
+	return files;
+}

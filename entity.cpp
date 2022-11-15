@@ -54,3 +54,158 @@ void entity::new_entity(int argc, char* argv[])
 		}
 	}
 }
+
+void entity::component_group(int argc, char* argv[])
+{
+	//parse arguments
+	cxxopts::Options options("bed", "Command line tool to help create bedrock addons");
+	options.add_options()
+		("g,group", "Component group", cxxopts::value<std::string>())
+		("i,indent", "JSON file indent", cxxopts::value<int>()->default_value("4"))
+		("f,family", "Family types to modify", cxxopts::value<std::vector<std::string>>())
+		("d,directory", "Subdirectory to modify", cxxopts::value <std::string>()->default_value(""))
+		("r,remove", "Remove group")
+		("n,name", "Filenames of entities to modify", cxxopts::value<std::vector<std::string>>()->default_value(""));
+
+	auto result = options.parse(argc, argv);
+
+	//if arguments are invalid, print help message
+	if (!result.count("group"))
+	{
+		help::output_help(argc, argv);
+		return;
+	}
+
+	std::vector<entity> entities;
+
+	for (const auto& file : file_manager::get_files_in_directory(file_manager::get_bp_path() + "\\entities\\" + result["directory"].as<std::string>()))
+	{
+		if (result.count("name") && std::find(result["name"].as<std::vector<std::string>>().begin(), result["name"].as<std::vector<std::string>>().end(), utilities::split(file, "\\entities\\").back()) != result["name"].as<std::vector<std::string>>().end())
+		{
+			entities.push_back(entity(file));
+		}
+		else if (!result.count("name"))
+		{
+			entities.push_back(entity(file));
+		}
+	}
+
+	//filter entity list by family types
+	if (result.count("family"))
+	{
+		std::vector<entity> filtered_entities;
+		for (auto& ent : entities)
+		{
+			if (ent.contains_family_type(result["family"].as<std::vector<std::string>>()))
+			{
+				filtered_entities.push_back(ent);
+			}
+		}
+
+		entities = filtered_entities;
+	}
+
+	//add component group to entity list
+	if (!result.count("remove"))
+	{
+		nlohmann::ordered_json group = nlohmann::ordered_json::parse(result["group"].as<std::string>());
+		for (auto& ent : entities)
+		{
+			ent.add_component_group(group);
+			ent.add_event(group.items().begin().key(), true);
+			ent.write_entity(result["indent"].as<int>());
+		}
+		return;
+	}
+
+	//remove component group from entity list
+	for (auto& ent : entities)
+	{
+		ent.remove_component_group(result["group"].as<std::string>());
+		ent.remove_event(result["group"].as<std::string>());
+		ent.write_entity(result["indent"].as<int>());
+	}
+}
+
+entity::entity::entity() : entity_json(nlohmann::ordered_json()) {}
+
+entity::entity::entity(const nlohmann::ordered_json& entity) : entity_json(entity) {}
+
+entity::entity::entity(const std::string& file) : filepath(file)
+{
+	entity_json = file_manager::read_json_from_file(file, nlohmann::ordered_json());
+}
+
+entity::entity::entity(const nlohmann::ordered_json& entity, const std::string& file) : entity_json(entity), filepath(file) {}
+
+entity::entity::~entity() {}
+
+const bool entity::entity::contains_family_type(const std::string& family)
+{
+	if (entity_json["minecraft:entity"]["components"].contains("minecraft:type_family"))
+	{
+		if (std::find(entity_json["minecraft:entity"]["components"]["minecraft:type_family"]["family"].begin(), entity_json["minecraft:entity"]["components"]["minecraft:type_family"]["family"].end(), family) != std::end(entity_json["minecraft:entity"]["components"]["minecraft:type_family"]["family"]))
+		{
+			return true;
+		};
+	}
+	return false;
+}
+
+const bool entity::entity::contains_family_type(const std::vector<std::string>& families)
+{
+	for (const auto& family : families)
+	{
+		if (contains_family_type(family))
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void entity::entity::add_component_group(const nlohmann::ordered_json& component_group)
+{
+	try
+	{
+		entity_json["minecraft:entity"]["component_groups"][component_group.items().begin().key()] = component_group.items().begin().value();
+	}
+	catch (const std::exception& e)
+	{
+		std::cerr << e.what() << std::endl;
+	}
+}
+
+void entity::entity::add_event(const std::string& event_name, bool remove_event)
+{
+	entity_json["minecraft:entity"]["events"]["add_" + event_name] = { {"add", {{"component_groups", {event_name}}}} };
+	if (remove_event)
+	{
+		entity_json["minecraft:entity"]["events"]["remove_" + event_name] = { {"remove", {{"component_groups", {event_name}}}} };
+	}
+}
+
+void entity::entity::remove_component_group(const std::string& group_name)
+{
+	entity_json["minecraft:entity"]["component_groups"].erase(group_name);
+}
+
+void entity::entity::remove_event(const std::string& name)
+{
+	entity_json["minecraft:entity"]["events"].erase("add_" + name);
+	entity_json["minecraft:entity"]["events"].erase("remove_" + name);
+}
+
+void entity::entity::write_entity(int indent)
+{
+	if (!filepath.empty())
+	{
+		file_manager::write_json_to_file(entity_json, filepath, indent);
+	}
+}
+
+const nlohmann::ordered_json entity::entity::get_json()
+{
+	return entity_json;
+}

@@ -14,4 +14,5 @@ namespace file_manager
 	std::string get_project_root();
 	std::string get_bp_path();
 	std::string get_rp_path();
+	std::vector<std::string> get_files_in_directory(const std::string& path);
 }
