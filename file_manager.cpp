@@ -51,6 +51,54 @@ nlohmann::ordered_json file_manager::read_json_from_file(const std::string& path
 	return object;
 }
 
+void file_manager::add_lang_entry(const std::string& entry, const std::string& filename, std::string category)
+{
+	std::string path = get_rp_path() + "\\texts\\" + filename + ".lang";
+	make_directory(path);
+	utilities::to_upper(category);
+
+	std::ifstream file(path);
+	std::stringstream f_stream;
+	f_stream << file.rdbuf();
+	std::string f_string = f_stream.str();
+	std::vector<std::string> lines = utilities::split(f_string, '\n');
+
+	size_t index = 0;
+	bool found_category = false;
+	for (auto& line : lines)
+	{
+		if (line.find(category) != std::string::npos)
+		{
+			found_category = true;
+			break;
+		}
+		index++;
+	}
+
+	if (found_category)
+	{
+		std::vector<std::string>::iterator it = lines.begin() + index;
+		lines.insert(it + 1, entry);
+	}
+	else
+	{
+		lines.push_back("## " + category + " " + std::string(100, '='));
+		lines.push_back(entry);
+	}
+
+	file.close();
+
+	std::ofstream output(path, std::ios::trunc);
+
+	for (size_t i = 0; i < lines.size(); i++)
+	{
+		output << lines[i] << std::endl;
+	}
+	output.close();
+
+	std::cout << "Added lint to lang at: " << path << std::endl;
+}
+
 void file_manager::make_directory(const std::string& path)
 {
 	size_t index = path.find_last_of('\\');
@@ -96,7 +144,6 @@ std::string file_manager::get_bp_path()
 {
 	if (!behavior_pack.empty())
 	{
-		std::cout << behavior_pack << std::endl;
 		return behavior_pack;
 	}
 
@@ -105,7 +152,6 @@ std::string file_manager::get_bp_path()
 		for (auto const& dir_entry : std::filesystem::directory_iterator(get_project_root() + "behavior_packs"))
 		{
 			behavior_pack = dir_entry.path().u8string();
-			std::cout << behavior_pack << std::endl;
 			return behavior_pack;
 		}
 	}

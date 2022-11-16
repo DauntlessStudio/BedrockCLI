@@ -9,7 +9,8 @@ void block::new_block(int argc, char* argv[])
 	cxxopts::Options options("nblk", "Create new blocks");
 	options.add_options()
 		("h,help", "View help")
-		("l,loot", "Add loot table")
+		("t,table", "Add loot table")
+		("l,lang", "Lang files to add entries to", cxxopts::value<std::vector<std::string>>()->implicit_value("en_US"))
 		("i,indent", "JSON file indent", cxxopts::value<int>()->default_value("4"))
 		("e,emissive", "Block emits light", cxxopts::value<double>()->default_value("0.0"))
 		("n,name", "Block names to add", cxxopts::value<std::vector<std::string>>());
@@ -31,7 +32,7 @@ void block::new_block(int argc, char* argv[])
 
 		std::string filename = utilities::split(name, ':').back();
 
-		if (result.count("loot"))
+		if (result.count("table"))
 		{
 			block_bp["minecraft:block"]["components"]["minecraft:loot"] = "loot_tables/blocks/" + filename + ".json";
 			nlohmann::ordered_json loot_table;
@@ -48,5 +49,13 @@ void block::new_block(int argc, char* argv[])
 		nlohmann::ordered_json item_texture = file_manager::read_json_from_file(file_manager::get_rp_path() + "\\textures\\terrain_texture.json", rp_terrain_tex);
 		item_texture["texture_data"][filename] = { {"textures", "textures/blocks/" + name} };
 		file_manager::write_json_to_file(item_texture, file_manager::get_rp_path() + "\\textures\\terrain_texture.json", result["indent"].as<int>());
+
+		if (result.count("lang"))
+		{
+			for (const auto& lang_file : result["lang"].as<std::vector<std::string>>())
+			{
+				file_manager::add_lang_entry("tile." + name + ".name=" + utilities::format_name(filename), lang_file, "blocks");
+			}
+		}
 	}
 }

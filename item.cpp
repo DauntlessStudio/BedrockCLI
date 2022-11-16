@@ -11,6 +11,7 @@ void item::new_item(int argc, char* argv[])
 	cxxopts::Options options("nitm", "Create new items");
 	options.add_options()
 		("h,help", "View help")
+		("l,lang", "Lang files to add entries to", cxxopts::value<std::vector<std::string>>()->implicit_value("en_US"))
 		("s,stack", "Maximum stack size", cxxopts::value<int>()->default_value("64"))
 		("i,indent", "JSON file indent", cxxopts::value<int>()->default_value("4"))
 		("e,edible", "Is edible")
@@ -46,5 +47,13 @@ void item::new_item(int argc, char* argv[])
 		nlohmann::ordered_json item_texture = file_manager::read_json_from_file(file_manager::get_rp_path() + "\\textures\\item_texture.json", rp_item_texture);
 		item_texture["texture_data"][filename] = { {"textures", "textures/items/" + name} };
 		file_manager::write_json_to_file(item_texture, file_manager::get_rp_path() + "\\textures\\item_texture.json", result["indent"].as<int>());
+
+		if (result.count("lang"))
+		{
+			for (const auto& lang_file : result["lang"].as<std::vector<std::string>>())
+			{
+				file_manager::add_lang_entry("item." + name + ".name=" + utilities::format_name(filename), lang_file, "items");
+			}
+		}
 	}
 }

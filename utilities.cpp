@@ -45,6 +45,39 @@ void utilities::replace_all(std::string& str, const std::string& from, const std
     }
 }
 
+void utilities::to_upper(std::string& str)
+{
+    std::transform(str.begin(), str.end(), str.begin(), std::toupper);
+}
+
+void utilities::to_lower(std::string& str)
+{
+    std::transform(str.begin(), str.end(), str.begin(), std::tolower);
+}
+
+std::string utilities::format_name(const std::string& str)
+{
+    std::string formatted_name = str;
+    bool caps_next = true;
+
+    for (size_t i = 0; i < str.length(); i++)
+    {
+        if (caps_next)
+        {
+            formatted_name[i] = toupper(formatted_name[i]);
+            caps_next = false;
+        }
+
+        if (str[i] == '_')
+        {
+            formatted_name[i] = ' ';
+            caps_next = true;
+        }
+    }
+
+    return formatted_name;
+}
+
 
 template<class T>
 void utilities::push_back_if(std::vector<T>& vector, const T& val, const bool& condition)
