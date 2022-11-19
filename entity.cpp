@@ -102,7 +102,7 @@ void entity::component_group(int argc, char* argv[])
 	{
 		group = nlohmann::ordered_json::parse(result["group"].as<std::string>());
 	}
-	catch (const std::exception& e)
+	catch (const std::exception&)
 	{
 		group[result["group"].as<std::string>()] = nlohmann::json::object();
 	}
@@ -201,6 +201,66 @@ void entity::component(int argc, char* argv[])
 	}
 }
 
+void entity::animation(int argc, char* argv[])
+{
+	//parse arguments
+	cxxopts::Options options("eanim", "Attaches or removes animations for the entites");
+	options.add_options()
+		("h,help", "View help")
+		("a,animation", "Animation name to add as 'entity.animation'", cxxopts::value<std::string>())
+		("s,script", "Add animation to scripts")
+		("c,controller", "Is animation a controller")
+		("i,indent", "JSON file indent", cxxopts::value<int>()->default_value("4"))
+		("f,family", "Family types to modify", cxxopts::value<std::vector<std::string>>()->default_value(""))
+		("d,directory", "Subdirectory to modify", cxxopts::value <std::string>()->default_value(""))
+		("r,remove", "Remove animation")
+		("n,name", "Filenames of entities to modify", cxxopts::value<std::vector<std::string>>()->default_value(""));
+
+	options.allow_unrecognised_options();
+	auto result = options.parse(argc, argv);
+
+	//if arguments are invalid, print help message
+	if (!result.count("animation") || result.count("help"))
+	{
+		std::cout << options.help() << std::endl;
+		return;
+	}
+
+	std::vector<entity> entities;
+
+	for (const auto& file : file_manager::get_files_in_directory(file_manager::get_bp_path() + "\\entities\\" + result["directory"].as<std::string>(), result["name"].as<std::vector<std::string>>()))
+	{
+		entities.push_back(entity(file));
+	}
+
+	//filter entity list by family types
+	entities = filter_by_family(entities, result["family"].as<std::vector<std::string>>());
+
+	std::string animation = "animation." + result["animation"].as<std::string>();
+	if (result.count("controller"))
+	{
+		animation = "controller." + animation;
+	}
+
+	//add animation to entity list
+	if (!result.count("remove"))
+	{
+		for (auto& ent : entities)
+		{
+			ent.add_animation(animation, result.count("script"));
+			ent.write_entity(result["indent"].as<int>());
+		}
+		return;
+	}
+
+	//remove animation from entity list
+	for (auto& ent : entities)
+	{
+		ent.remove_animation(animation);
+		ent.write_entity(result["indent"].as<int>());
+	}
+}
+
 std::vector<entity::entity> entity::filter_by_family(std::vector<entity>& entities, std::vector<std::string> families)
 {
 	families.erase(std::remove(families.begin(), families.end(), ""), families.end());
@@ -258,6 +318,45 @@ const bool entity::entity::contains_family_type(const std::vector<std::string>& 
 	}
 
 	return false;
+}
+
+void entity::entity::add_animation(const std::string& anim_name, bool scripts)
+{
+	std::string short_name = utilities::split(anim_name, '.').back();
+	if (anim_name.find("controller") != std::string::npos)
+	{
+		short_name = "ctrl." + short_name;
+	}
+
+	entity_json["minecraft:entity"]["description"]["animations"][short_name] = anim_name;
+
+	if (scripts)
+	{
+		entity_json["minecraft:entity"]["description"]["scripts"]["animate"].push_back(short_name);
+	}
+}
+
+void entity::entity::remove_animation(const std::string& anim_name)
+{
+	std::string short_name = utilities::split(anim_name, '.').back();
+	if (anim_name.find("controller") != std::string::npos)
+	{
+		short_name = "ctrl." + short_name;
+	}
+
+	entity_json["minecraft:entity"]["description"]["animations"].erase(short_name);
+	nlohmann::json val = entity_json["minecraft:entity"]["description"]["scripts"]["animate"];
+	auto result = std::find(val.begin(), val.end(), short_name);
+	if (result != val.end())
+	{
+		int index = result - val.begin();
+		entity_json["minecraft:entity"]["description"]["scripts"]["animate"].erase(index);
+	}
+
+	if (entity_json["minecraft:entity"]["description"]["scripts"]["animate"].empty())
+	{
+		entity_json["minecraft:entity"]["description"]["scripts"]["animate"] = nlohmann::json::array();
+	}
 }
 
 void entity::entity::add_component_group(const nlohmann::ordered_json& component_group)

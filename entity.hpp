@@ -10,6 +10,7 @@ namespace entity
 	void new_entity(int argc, char* argv[]);
 	void component_group(int argc, char* argv[]);
 	void component(int argc, char* argv[]);
+	void animation(int argc, char* argv[]);
 
 	class entity
 	{
@@ -26,6 +27,9 @@ namespace entity
 
 		const bool contains_family_type(const std::string& family);
 		const bool contains_family_type(const std::vector<std::string>& families);
+
+		void add_animation(const std::string& anim_name, bool scripts);
+		void remove_animation(const std::string& anim_name);
 
 		void add_component_group(const nlohmann::ordered_json& component_group);
 		void remove_component_group(const std::string& group_name);
