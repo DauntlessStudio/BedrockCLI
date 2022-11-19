@@ -25,11 +25,6 @@ void program_arguments::parse(int argc, char* argv[])
 	{
 		assign_command(result["command"].as<std::string>());
 	}
-	else if(result.count("help"))
-	{
-		std::cout << _help << std::endl;
-		exit(0);
-	}
 
 	if (result.count("bpath"))
 	{
