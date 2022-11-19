@@ -207,7 +207,7 @@ void entity::animation(int argc, char* argv[])
 	cxxopts::Options options("eanim", "Attaches or removes animations for the entites");
 	options.add_options()
 		("h,help", "View help")
-		("a,animation", "Animation name to add as 'entity.animation'", cxxopts::value<std::string>())
+		("a,animation", "Animation names to add/remove as 'entity.animation'", cxxopts::value<std::vector<std::string>>())
 		("s,script", "Add animation to scripts")
 		("c,controller", "Is animation a controller")
 		("i,indent", "JSON file indent", cxxopts::value<int>()->default_value("4"))
@@ -236,10 +236,14 @@ void entity::animation(int argc, char* argv[])
 	//filter entity list by family types
 	entities = filter_by_family(entities, result["family"].as<std::vector<std::string>>());
 
-	std::string animation = "animation." + result["animation"].as<std::string>();
-	if (result.count("controller"))
+	std::vector<std::string> animations = result["animation"].as<std::vector<std::string>>();
+	for (auto& animation : animations)
 	{
-		animation = "controller." + animation;
+		animation = "animation." + animation;
+		if (result.count("controller"))
+		{
+			animation = "controller." + animation;
+		}
 	}
 
 	//add animation to entity list
@@ -247,7 +251,10 @@ void entity::animation(int argc, char* argv[])
 	{
 		for (auto& ent : entities)
 		{
-			ent.add_animation(animation, result.count("script"));
+			for (const auto& animation : animations)
+			{
+				ent.add_animation(animation, result.count("script"));
+			}
 			ent.write_entity(result["indent"].as<int>());
 		}
 		return;
@@ -256,7 +263,10 @@ void entity::animation(int argc, char* argv[])
 	//remove animation from entity list
 	for (auto& ent : entities)
 	{
-		ent.remove_animation(animation);
+		for (const auto& animation : animations)
+		{
+			ent.remove_animation(animation);
+		}
 		ent.write_entity(result["indent"].as<int>());
 	}
 }
