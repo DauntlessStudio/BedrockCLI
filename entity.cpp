@@ -16,8 +16,9 @@ void entity::new_entity(int argc, char* argv[])
 		("e,enemy", "Create hostile enemy")
 		("p,passive", "Create passive mob")
 		("m,model", "Create new model with entity")
+		("r,rp", "Create rp entry for entity")
 		("i,indent", "JSON file indent", cxxopts::value<int>()->default_value("4"))
-		("n,name", "Block names to add", cxxopts::value<std::vector<std::string>>());
+		("n,name", "Entity names to add", cxxopts::value<std::vector<std::string>>());
 
 	options.allow_unrecognised_options();
 	auto result = options.parse(argc, argv);
@@ -33,20 +34,23 @@ void entity::new_entity(int argc, char* argv[])
 	for (auto name : result["name"].as<std::vector<std::string>>())
 	{
 		nlohmann::ordered_json bp_entity = result.count("enemy") ? bp_hostile_entity : result.count("passive") ? bp_passive_entity : bp_dummy_entity;
-		nlohmann::ordered_json rp_entity = rp_entity_default;
 
 		std::string filename = utilities::split(name, ':').back();
 		std::string entity_namespace = utilities::split(name, ':').front();
 
 		bp_entity["minecraft:entity"]["description"]["identifier"] = name;
 		bp_entity["minecraft:entity"]["components"]["minecraft:type_family"]["family"] = {entity_namespace, filename};
-
-		rp_entity["minecraft:client_entity"]["description"]["identifier"] = name;
-		rp_entity["minecraft:client_entity"]["description"]["geometry"]["default"] = "geometry." + filename;
-		rp_entity["minecraft:client_entity"]["description"]["textures"]["default"] = "textures/entity/" + filename + "/default";
-
 		file_manager::write_json_to_file(bp_entity, file_manager::get_bp_path() + "\\entities\\" + filename + ".json", result["indent"].as<int>());
-		file_manager::write_json_to_file(rp_entity, file_manager::get_rp_path() + "\\entity\\" + filename + ".json", result["indent"].as<int>());
+
+		if (result.count("rp"))
+		{
+			nlohmann::ordered_json rp_entity = rp_entity_default;
+			rp_entity["minecraft:client_entity"]["description"]["identifier"] = name;
+			rp_entity["minecraft:client_entity"]["description"]["geometry"]["default"] = "geometry." + filename;
+			rp_entity["minecraft:client_entity"]["description"]["textures"]["default"] = "textures/entity/" + filename + "/default";
+
+			file_manager::write_json_to_file(rp_entity, file_manager::get_rp_path() + "\\entity\\" + filename + ".json", result["indent"].as<int>());
+		}
 
 		if (result.count("model"))
 		{
@@ -76,7 +80,7 @@ void entity::component_group(int argc, char* argv[])
 	cxxopts::Options options("cogr", "Attaches or removes component groups for the entities");
 	options.add_options()
 		("h,help", "View help")
-		("g,group", "The component group to add in JSON format, or the name of the group to remove", cxxopts::value<std::string>())
+		("g,group", "The component group to add/remove, either a name or JSON string", cxxopts::value<std::string>())
 		("i,indent", "JSON file indent", cxxopts::value<int>()->default_value("4"))
 		("f,family", "Family types to modify", cxxopts::value<std::vector<std::string>>()->default_value(""))
 		("d,directory", "Subdirectory to modify", cxxopts::value <std::string>()->default_value(""))
@@ -100,8 +104,7 @@ void entity::component_group(int argc, char* argv[])
 	}
 	catch (const std::exception& e)
 	{
-		std::cerr << e.what() << std::endl;
-		return;
+		group[result["group"].as<std::string>()] = nlohmann::json::object();
 	}
 
 	std::vector<entity> entities;
