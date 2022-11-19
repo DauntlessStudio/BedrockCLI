@@ -49,7 +49,7 @@ void program_arguments::run_command(int argc, char* argv[])
 
 void program_arguments::assign_command(const std::string& arg)
 {
-	std::vector<std::string> command_list{"cogr", "comp", "nent", "nitm", "nblk"};
+	std::vector<std::string> command_list{"cogr", "comp", "nent", "nitm", "nblk", "anim"};
 	auto it = std::find(command_list.begin(), command_list.end(), arg);
 
 	int index = std::distance(command_list.begin(), it);
@@ -69,6 +69,9 @@ void program_arguments::assign_command(const std::string& arg)
 		break;
 	case 4: //NBLK
 		_command = block::new_block;
+		break;
+	case 5: //ANIM
+		_command = animation::new_animation;
 		break;
 	default: //HELP
 		std::cout << "Unrecognized Command: " << arg << std::endl;

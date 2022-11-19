@@ -20,4 +20,5 @@ namespace file_manager
 	void set_rp_path(const std::string& path);
 	std::vector<std::string> get_files_in_directory(const std::string& path);
 	std::vector<std::string> get_files_in_directory(const std::string& path, std::vector<std::string> filters);
+	std::string get_file_in_directory(const std::string& dir_path, const std::string& filename);
 }

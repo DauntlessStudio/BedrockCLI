@@ -238,3 +238,22 @@ std::vector<std::string> file_manager::get_files_in_directory(const std::string&
 	}
 	return files;
 }
+
+std::string file_manager::get_file_in_directory(const std::string& dir_path, const std::string& filename)
+{
+	if (!std::filesystem::exists(dir_path))
+	{
+		return std::string();
+	}
+
+	for (auto const& file : std::filesystem::recursive_directory_iterator(dir_path))
+	{
+		std::string f_string = file.path().u8string();
+		if (utilities::split(f_string, '\\').back() == utilities::split(filename, '\\').back())
+		{
+			return f_string;
+		}
+	}
+
+	return std::string();
+}
