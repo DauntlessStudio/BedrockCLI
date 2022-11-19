@@ -78,6 +78,13 @@ std::string utilities::format_name(const std::string& str)
     return formatted_name;
 }
 
+std::string utilities::vector_to_string(const std::vector<std::string>& vec)
+{
+    std::string s;
+    for (const auto& piece : vec) s += piece;
+    return s;
+}
+
 
 template<class T>
 void utilities::push_back_if(std::vector<T>& vector, const T& val, const bool& condition)

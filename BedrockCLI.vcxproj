@@ -146,6 +146,7 @@
     <ClCompile Include="animation.cpp" />
     <ClCompile Include="entity.cpp" />
     <ClCompile Include="file_manager.cpp" />
+    <ClCompile Include="function.cpp" />
     <ClCompile Include="help.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="block.cpp" />
@@ -159,6 +160,7 @@
     <ClInclude Include="extern\cxxopts\include\cxxopts.hpp" />
     <ClInclude Include="extern\nlohmann\single_include\nlohmann\json.hpp" />
     <ClInclude Include="file_manager.hpp" />
+    <ClInclude Include="function.hpp" />
     <ClInclude Include="help.hpp" />
     <ClInclude Include="main.hpp" />
     <ClInclude Include="block.hpp" />

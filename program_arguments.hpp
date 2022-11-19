@@ -9,6 +9,7 @@
 #include "block.hpp"
 #include "entity.hpp"
 #include "animation.hpp"
+#include "function.hpp"
 #include <stdexcept>
 #include <iostream>
 #include "extern\cxxopts\include\cxxopts.hpp"

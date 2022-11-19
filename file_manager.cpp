@@ -16,7 +16,7 @@ void file_manager::write_json_to_file(const nlohmann::ordered_json& object, cons
 
 	try
 	{
-		output << std::setw(indent) << object << std::endl;
+		output << std::setw(indent) << object;
 	}
 	catch (const std::exception& e)
 	{
@@ -256,4 +256,16 @@ std::string file_manager::get_file_in_directory(const std::string& dir_path, con
 	}
 
 	return std::string();
+}
+
+void file_manager::write_file(const std::string& path, const std::string& contents)
+{
+	make_directory(path);
+	std::ofstream output(path);
+
+	output << contents;
+
+	output.close();
+
+	std::cout << "Wrote: " << path << std::endl;
 }
