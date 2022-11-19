@@ -8,4 +8,5 @@
 namespace animation
 {
 	void new_animation(int argc, char* argv[]);
+	void new_controller(int argc, char* argv[]);
 }

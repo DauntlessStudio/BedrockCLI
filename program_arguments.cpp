@@ -74,7 +74,7 @@ void program_arguments::assign_command(const std::string& arg)
 		_command = animation::new_animation;
 		break;
 	case 6: //CTRL
-		_command = animation::new_animation;
+		_command = animation::new_controller;
 		break;
 	case 7: //EANIM
 		_command = entity::animation;
