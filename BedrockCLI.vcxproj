@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -75,6 +75,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>..\..\..\..\..\bin</OutDir>
+    <TargetName>bed</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -103,6 +105,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -140,14 +143,30 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="animation.cpp" />
+    <ClCompile Include="entity.cpp" />
+    <ClCompile Include="file_manager.cpp" />
+    <ClCompile Include="function.cpp" />
     <ClCompile Include="help.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="block.cpp" />
+    <ClCompile Include="item.cpp" />
     <ClCompile Include="program_arguments.cpp" />
+    <ClCompile Include="utilities.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="animation.hpp" />
+    <ClInclude Include="entity.hpp" />
+    <ClInclude Include="extern\cxxopts\include\cxxopts.hpp" />
+    <ClInclude Include="extern\nlohmann\single_include\nlohmann\json.hpp" />
+    <ClInclude Include="file_manager.hpp" />
+    <ClInclude Include="function.hpp" />
     <ClInclude Include="help.hpp" />
     <ClInclude Include="main.hpp" />
+    <ClInclude Include="block.hpp" />
+    <ClInclude Include="item.hpp" />
     <ClInclude Include="program_arguments.hpp" />
+    <ClInclude Include="utilities.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
