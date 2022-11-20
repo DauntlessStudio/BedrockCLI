@@ -49,5 +49,5 @@ Contributors names and contact info
 
 ## Version History
 
-* 0.0.1
+* 0.1.0
     * Initial Release
