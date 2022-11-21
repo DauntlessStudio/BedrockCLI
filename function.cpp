@@ -4,9 +4,10 @@ void function::new_function(int argc, char* argv[])
 {
 	//parse arguments
 	cxxopts::Options options("func", "Create new functions");
+
 	options.add_options()
 		("h,help", "View help")
-		("c,commands", "The command values", cxxopts::value<std::vector<std::string>>()->default_value("say test"))
+		("c,commands", "The commands, using ';' as a delimiter", cxxopts::value<std::string>()->default_value("say test"))
 		("n,name", "Function names `foo/bar`", cxxopts::value<std::vector<std::string>>());
 
 	options.allow_unrecognised_options();
@@ -19,12 +20,15 @@ void function::new_function(int argc, char* argv[])
 		return;
 	}
 
-	std::vector<std::string> commands = result["commands"].as<std::vector<std::string>>();
+	std::vector<std::string> commands;
+	std::stringstream command_input(result["commands"].as<std::string>());
 
-	for (auto& command : commands)
+	std::string command;
+	while (!command_input.eof() && std::getline(command_input, command, ';'))
 	{
 		format_function(command);
 		command.push_back('\n');
+		commands.push_back(command);
 	}
 
 	std::string contents = utilities::vector_to_string(commands);
