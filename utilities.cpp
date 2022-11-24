@@ -45,14 +45,18 @@ void utilities::replace_all(std::string& str, const std::string& from, const std
     }
 }
 
-void utilities::to_upper(std::string& str)
+std::string utilities::to_upper(const std::string& str)
 {
-    std::transform(str.begin(), str.end(), str.begin(), std::toupper);
+    std::string val = str;
+    std::transform(val.begin(), val.end(), val.begin(), std::toupper);
+    return val;
 }
 
-void utilities::to_lower(std::string& str)
+std::string utilities::to_lower(const std::string& str)
 {
-    std::transform(str.begin(), str.end(), str.begin(), std::tolower);
+    std::string val = str;
+    std::transform(val.begin(), val.end(), val.begin(), std::tolower);
+    return val;
 }
 
 std::string utilities::format_name(const std::string& str)

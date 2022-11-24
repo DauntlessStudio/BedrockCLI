@@ -44,7 +44,7 @@ void program_arguments::run_command(int argc, char* argv[])
 
 void program_arguments::assign_command(const std::string& arg)
 {
-	std::vector<std::string> command_list{"cogr", "comp", "nent", "nitm", "nblk", "anim", "ctrl", "eanim", "func"};
+	std::vector<std::string> command_list{"cogr", "comp", "nent", "nitm", "nblk", "anim", "ctrl", "eanim", "func", "prop", "eprop" };
 	auto it = std::find(command_list.begin(), command_list.end(), arg);
 
 	int index = std::distance(command_list.begin(), it);
@@ -76,6 +76,12 @@ void program_arguments::assign_command(const std::string& arg)
 		break;
 	case 8: //FUNC
 		_command = function::new_function;
+		break;
+	case 9: //PROP
+		_command = entity::properties;
+		break;
+	case 10: //EPROP
+		_command = entity::property_event;
 		break;
 	default: //HELP
 		std::cout << "Unrecognized Command: " << arg << std::endl;

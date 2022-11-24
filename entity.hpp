@@ -11,6 +11,8 @@ namespace entity
 	void component_group(int argc, char* argv[]);
 	void component(int argc, char* argv[]);
 	void animation(int argc, char* argv[]);
+	void properties(int argc, char* argv[]);
+	void property_event(int argc, char* argv[]);
 
 	class entity
 	{
@@ -28,6 +30,8 @@ namespace entity
 		const bool contains_family_type(const std::string& family);
 		const bool contains_family_type(const std::vector<std::string>& families);
 
+		void add_property(const std::string& property_name, const std::string& type, const std::vector<std::string>& values, const std::string& default_value, const bool& sync);
+
 		void add_animation(const std::string& anim_name, bool scripts);
 		void remove_animation(const std::string& anim_name);
 
@@ -39,6 +43,8 @@ namespace entity
 
 		void add_event(const std::string& event_name, bool remove_event);
 		void remove_event(const std::string& name);
+
+		bool add_property_event(const std::string& property_name, const std::string& new_value);
 
 		void write_entity(int indent = 4);
 
