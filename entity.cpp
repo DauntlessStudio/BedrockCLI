@@ -442,14 +442,29 @@ void entity::entity::add_property(const std::string& property_name, const std::s
 	switch (index)
 	{
 	case 0: //bool
+		//TODO turn bool to string if needed
 		entity_json["minecraft:entity"]["description"]["properties"][property_name]["type"] = "bool";
 		for (const auto& val : values)
 		{
-			entity_json["minecraft:entity"]["description"]["properties"][property_name]["values"].push_back((utilities::to_lower(val) == "true" || val == "1"));
+			if (bool is_true = (utilities::to_lower(val) == "true" || val == "1") || (utilities::to_lower(val) == "false" || val == "0"))
+			{
+				entity_json["minecraft:entity"]["description"]["properties"][property_name]["values"].push_back(is_true);
+			}
+			else
+			{
+				entity_json["minecraft:entity"]["description"]["properties"][property_name]["values"].push_back(val);
+			}
 		}
 		if (!default_value.empty())
 		{
-			entity_json["minecraft:entity"]["description"]["properties"][property_name]["default"] = (utilities::to_lower(default_value) == "true" || default_value == "1");
+			if (bool is_true = (utilities::to_lower(default_value) == "true" || default_value == "1") || (utilities::to_lower(default_value) == "false" || default_value == "0"))
+			{
+				entity_json["minecraft:entity"]["description"]["properties"][property_name]["default"] = is_true;
+			}
+			else
+			{
+				entity_json["minecraft:entity"]["description"]["properties"][property_name]["default"] = default_value;
+			}
 		}
 		break;
 	case 1: //enum
@@ -467,55 +482,22 @@ void entity::entity::add_property(const std::string& property_name, const std::s
 		entity_json["minecraft:entity"]["description"]["properties"][property_name]["type"] = "float";
 		for (const auto& val : values)
 		{
-			try
-			{
-				entity_json["minecraft:entity"]["description"]["properties"][property_name]["values"].push_back(std::stod(val));
-			}
-			catch (const std::exception&)
-			{
-				std::cerr << "Cannot convert " << val << " to float" << std::endl;
-				exit(0);
-			}
+			entity_json["minecraft:entity"]["description"]["properties"][property_name]["values"].push_back(val);
 		}
 		if (!default_value.empty())
 		{
-			try
-			{
-				entity_json["minecraft:entity"]["description"]["properties"][property_name]["default"] = std::stod(default_value);
-
-			}
-			catch (const std::exception&)
-			{
-				std::cerr << "Cannot convert " << default_value << " to float" << std::endl;
-				exit(0);
-			}
+			entity_json["minecraft:entity"]["description"]["properties"][property_name]["default"] = default_value;
 		}
 		break;
 	case 3: //int
 		entity_json["minecraft:entity"]["description"]["properties"][property_name]["type"] = "int";
 		for (const auto& val : values)
 		{
-			try
-			{
-				entity_json["minecraft:entity"]["description"]["properties"][property_name]["values"].push_back(std::stoi(val));
-			}
-			catch (const std::exception&)
-			{
-				std::cerr << "Cannot convert " << val << " to int" << std::endl;
-				exit(0);
-			}
+			entity_json["minecraft:entity"]["description"]["properties"][property_name]["values"].push_back(val);
 		}
 		if (!default_value.empty())
 		{
-			try
-			{
-				entity_json["minecraft:entity"]["description"]["properties"][property_name]["default"] = std::stoi(default_value);
-			}
-			catch (const std::exception&)
-			{
-				std::cerr << "Cannot convert " << default_value << " to int" << std::endl;
-				exit(0);
-			}
+			entity_json["minecraft:entity"]["description"]["properties"][property_name]["default"] = default_value;
 		}
 		break;
 	default:
@@ -639,7 +621,14 @@ bool entity::entity::add_property_event(const std::string& property_name, const 
 	switch (index)
 	{
 	case 0: //bool
-		entity_json["minecraft:entity"]["events"]["set_" + property_no_namespace + "_" + new_value] = { {"set_property", {{property_name, utilities::to_lower(new_value) == "true" || utilities::to_lower(new_value) == "1"}}}};
+		if (bool is_true = utilities::to_lower(new_value) == "true" || utilities::to_lower(new_value) == "1" || utilities::to_lower(new_value) == "false" || utilities::to_lower(new_value) == "0")
+		{
+			entity_json["minecraft:entity"]["events"]["set_" + property_no_namespace + "_" + new_value] = { {"set_property", {{property_name, is_true}}} };
+		}
+		else
+		{
+			entity_json["minecraft:entity"]["events"]["set_" + property_no_namespace + "_" + new_value] = { {"set_property", {{property_name, new_value}}} };
+		}
 		break;
 	case 1: //enum
 		entity_json["minecraft:entity"]["events"]["set_" + property_no_namespace + "_" + new_value] = { {"set_property", {{property_name, new_value}}} };
@@ -651,8 +640,7 @@ bool entity::entity::add_property_event(const std::string& property_name, const 
 		}
 		catch (const std::exception&)
 		{
-			std::cerr << "Cannot convert " << new_value << " to float" << std::endl;
-			exit(0);
+			entity_json["minecraft:entity"]["events"]["set_" + property_no_namespace + "_" + new_value] = { {"set_property", {{property_name, new_value}}} };
 		}
 		break;
 	case 3: //int
@@ -662,8 +650,7 @@ bool entity::entity::add_property_event(const std::string& property_name, const 
 		}
 		catch (const std::exception&)
 		{
-			std::cerr << "Cannot convert " << new_value << " to float" << std::endl;
-			exit(0);
+			entity_json["minecraft:entity"]["events"]["set_" + property_no_namespace + "_" + new_value] = { {"set_property", {{property_name, new_value}}} };
 		}
 		break;
 	default:
