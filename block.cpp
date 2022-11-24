@@ -47,7 +47,7 @@ void block::new_block(int argc, char* argv[])
 
 		//modify textures/block_texture.json
 		nlohmann::ordered_json item_texture = file_manager::read_json_from_file(file_manager::get_rp_path() + "\\textures\\terrain_texture.json", rp_terrain_tex);
-		item_texture["texture_data"][filename] = { {"textures", "textures/blocks/" + name} };
+		item_texture["texture_data"][filename] = { {"textures", "textures/blocks/" + filename} };
 		file_manager::write_json_to_file(item_texture, file_manager::get_rp_path() + "\\textures\\terrain_texture.json", result["indent"].as<int>());
 
 		if (result.count("lang"))
