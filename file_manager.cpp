@@ -96,7 +96,7 @@ void file_manager::add_lang_entry(const std::string& entry, const std::string& f
 	}
 	output.close();
 
-	std::cout << "Added lint to lang at: " << path << std::endl;
+	std::cout << "Added line to lang at: " << path << std::endl;
 }
 
 void file_manager::make_directory(const std::string& path)
