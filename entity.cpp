@@ -271,6 +271,109 @@ void entity::animation(int argc, char* argv[])
 	}
 }
 
+void entity::properties(int argc, char* argv[])
+{
+	//parse arguments
+	cxxopts::Options options("prop", "Attaches properties to the entites");
+	options.add_options()
+		("h,help", "View help")
+		("p,property", "Property to add as 'namespace:property'", cxxopts::value<std::string>())
+		("i,indent", "JSON file indent", cxxopts::value<int>()->default_value("4"))
+		("f,family", "Family types to modify", cxxopts::value<std::vector<std::string>>()->default_value(""))
+		("d,directory", "Subdirectory to modify", cxxopts::value <std::string>()->default_value(""))
+		("t,type", "Property type, valid values are: bool, enum, float, int", cxxopts::value <std::string>()->default_value("bool"))
+		("v,values", "Possible values, seperated by commas", cxxopts::value<std::vector<std::string>>())
+		("default", "Default value", cxxopts::value <std::string>())
+		("s,sync", "Client sync")
+		("n,name", "Filenames of entities to modify", cxxopts::value<std::vector<std::string>>()->default_value(""));
+
+	options.allow_unrecognised_options();
+	auto result = options.parse(argc, argv);
+
+	//if arguments are invalid, print help message
+	if (!result.count("property") || result.count("help"))
+	{
+		std::cout << options.help() << std::endl;
+		return;
+	}
+
+	std::string property_name = result["property"].as<std::string>();
+
+	std::vector<entity> entities;
+
+	for (const auto& file : file_manager::get_files_in_directory(file_manager::get_bp_path() + "\\entities\\" + result["directory"].as<std::string>(), result["name"].as<std::vector<std::string>>()))
+	{
+		entities.push_back(entity(file));
+	}
+
+	//filter entity list by family types
+	entities = filter_by_family(entities, result["family"].as<std::vector<std::string>>());
+
+	//remove component group from entity list
+	for (auto& ent : entities)
+	{
+		std::vector<std::string> values;
+		if (result.count("values"))
+		{
+			values = result["values"].as<std::vector<std::string>>();
+		}
+		std::string default_value = "";
+		if (result.count("default"))
+		{
+			default_value = result["default"].as<std::string>();
+		}
+
+		ent.add_property(property_name, result["type"].as<std::string>(), values, default_value, result.count("sync") >= 1);
+		ent.write_entity(result["indent"].as<int>());
+	}
+}
+
+void entity::property_event(int argc, char* argv[])
+{
+	//parse arguments
+	cxxopts::Options options("eprop", "Adds property event to entities");
+	options.add_options()
+		("h,help", "View help")
+		("p,property", "Property to add as 'namespace:property'", cxxopts::value<std::string>())
+		("i,indent", "JSON file indent", cxxopts::value<int>()->default_value("4"))
+		("f,family", "Family types to modify", cxxopts::value<std::vector<std::string>>()->default_value(""))
+		("d,directory", "Subdirectory to modify", cxxopts::value <std::string>()->default_value(""))
+		("v,value", "New value", cxxopts::value<std::string>())
+		("s,sync", "Client sync")
+		("n,name", "Filenames of entities to modify", cxxopts::value<std::vector<std::string>>()->default_value(""));
+
+	options.allow_unrecognised_options();
+	auto result = options.parse(argc, argv);
+
+	//if arguments are invalid, print help message
+	if (!result.count("property") || !result.count("value") || result.count("help"))
+	{
+		std::cout << options.help() << std::endl;
+		return;
+	}
+
+	std::string property_name = result["property"].as<std::string>();
+
+	std::vector<entity> entities;
+
+	for (const auto& file : file_manager::get_files_in_directory(file_manager::get_bp_path() + "\\entities\\" + result["directory"].as<std::string>(), result["name"].as<std::vector<std::string>>()))
+	{
+		entities.push_back(entity(file));
+	}
+
+	//filter entity list by family types
+	entities = filter_by_family(entities, result["family"].as<std::vector<std::string>>());
+
+	//remove component group from entity list
+	for (auto& ent : entities)
+	{
+		if (ent.add_property_event(property_name, result["value"].as<std::string>()))
+		{
+			ent.write_entity(result["indent"].as<int>());
+		}
+	}
+}
+
 std::vector<entity::entity> entity::filter_by_family(std::vector<entity>& entities, std::vector<std::string> families)
 {
 	families.erase(std::remove(families.begin(), families.end(), ""), families.end());
@@ -328,6 +431,103 @@ const bool entity::entity::contains_family_type(const std::vector<std::string>& 
 	}
 
 	return false;
+}
+
+void entity::entity::add_property(const std::string& property_name, const std::string& type, const std::vector<std::string>& values, const std::string& default_value, const bool& sync)
+{
+	std::vector<std::string> command_list{ "bool", "enum", "float", "int" };
+	auto it = std::find(command_list.begin(), command_list.end(), type);
+	int index = std::distance(command_list.begin(), it);
+
+	switch (index)
+	{
+	case 0: //bool
+		entity_json["minecraft:entity"]["description"]["properties"][property_name]["type"] = "bool";
+		for (const auto& val : values)
+		{
+			entity_json["minecraft:entity"]["description"]["properties"][property_name]["values"].push_back((utilities::to_lower(val) == "true" || val == "1"));
+		}
+		if (!default_value.empty())
+		{
+			entity_json["minecraft:entity"]["description"]["properties"][property_name]["default"] = (utilities::to_lower(default_value) == "true" || default_value == "1");
+		}
+		break;
+	case 1: //enum
+		entity_json["minecraft:entity"]["description"]["properties"][property_name]["type"] = "enum";
+		for (const auto& val : values)
+		{
+			entity_json["minecraft:entity"]["description"]["properties"][property_name]["values"].push_back(val);
+		}
+		if (!default_value.empty())
+		{
+			entity_json["minecraft:entity"]["description"]["properties"][property_name]["default"] = default_value;
+		}
+		break;
+	case 2: //float
+		entity_json["minecraft:entity"]["description"]["properties"][property_name]["type"] = "float";
+		for (const auto& val : values)
+		{
+			try
+			{
+				entity_json["minecraft:entity"]["description"]["properties"][property_name]["values"].push_back(std::stod(val));
+			}
+			catch (const std::exception&)
+			{
+				std::cerr << "Cannot convert " << val << " to float" << std::endl;
+				exit(0);
+			}
+		}
+		if (!default_value.empty())
+		{
+			try
+			{
+				entity_json["minecraft:entity"]["description"]["properties"][property_name]["default"] = std::stod(default_value);
+
+			}
+			catch (const std::exception&)
+			{
+				std::cerr << "Cannot convert " << default_value << " to float" << std::endl;
+				exit(0);
+			}
+		}
+		break;
+	case 3: //int
+		entity_json["minecraft:entity"]["description"]["properties"][property_name]["type"] = "int";
+		for (const auto& val : values)
+		{
+			try
+			{
+				entity_json["minecraft:entity"]["description"]["properties"][property_name]["values"].push_back(std::stoi(val));
+			}
+			catch (const std::exception&)
+			{
+				std::cerr << "Cannot convert " << val << " to int" << std::endl;
+				exit(0);
+			}
+		}
+		if (!default_value.empty())
+		{
+			try
+			{
+				entity_json["minecraft:entity"]["description"]["properties"][property_name]["default"] = std::stoi(default_value);
+			}
+			catch (const std::exception&)
+			{
+				std::cerr << "Cannot convert " << default_value << " to int" << std::endl;
+				exit(0);
+			}
+		}
+		break;
+	default:
+		std::cerr << "Invalid Type: " << type << ". Valid types are: bool, enum, float, int." << std::endl;
+		exit(0);
+		break;
+	}
+
+	if (sync)
+	{
+		entity_json["minecraft:entity"]["description"]["properties"][property_name]["client_sync"] = sync;
+	}
 }
 
 void entity::entity::add_animation(const std::string& anim_name, bool scripts)
@@ -416,6 +616,61 @@ void entity::entity::add_event(const std::string& event_name, bool remove_event)
 	{
 		entity_json["minecraft:entity"]["events"]["remove_" + event_name] = { {"remove", {{"component_groups", {event_name}}}} };
 	}
+}
+
+bool entity::entity::add_property_event(const std::string& property_name, const std::string& new_value)
+{
+	std::string property_no_namespace = utilities::split(property_name, ":").back();
+	std::string property_type = "";
+	try
+	{
+		property_type = entity_json["minecraft:entity"]["description"]["properties"][property_name]["type"];
+	}
+	catch (const std::exception&)
+	{
+		std::cerr << "Entity at: " << filepath << " doesn't contain property: " << property_name << std::endl;
+		return false;
+	}
+
+	std::vector<std::string> command_list{ "bool", "enum", "float", "int" };
+	auto it = std::find(command_list.begin(), command_list.end(), property_type);
+	int index = std::distance(command_list.begin(), it);
+
+	switch (index)
+	{
+	case 0: //bool
+		entity_json["minecraft:entity"]["events"]["set_" + property_no_namespace + "_" + new_value] = { {"set_property", {{property_name, utilities::to_lower(new_value) == "true" || utilities::to_lower(new_value) == "1"}}}};
+		break;
+	case 1: //enum
+		entity_json["minecraft:entity"]["events"]["set_" + property_no_namespace + "_" + new_value] = { {"set_property", {{property_name, new_value}}} };
+		break;
+	case 2: //float
+		try
+		{
+			entity_json["minecraft:entity"]["events"]["set_" + property_no_namespace + "_" + new_value] = { {"set_property", {{property_name, std::stod(new_value)}}} };
+		}
+		catch (const std::exception&)
+		{
+			std::cerr << "Cannot convert " << new_value << " to float" << std::endl;
+			exit(0);
+		}
+		break;
+	case 3: //int
+		try
+		{
+			entity_json["minecraft:entity"]["events"]["set_" + property_no_namespace + "_" + new_value] = { {"set_property", {{property_name, std::stoi(new_value)}}} };
+		}
+		catch (const std::exception&)
+		{
+			std::cerr << "Cannot convert " << new_value << " to float" << std::endl;
+			exit(0);
+		}
+		break;
+	default:
+		break;
+	}
+
+	return true;
 }
 
 void entity::entity::write_entity(int indent)

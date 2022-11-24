@@ -4,9 +4,11 @@ void help::output_help(int argc, char* argv[])
 {
 	std::cout << program_arguments::get_options_help() << std::endl;
 	std::cout << "Commands:" << std::endl;
-	std::cout << "\tcomp: Attaches or removes components for the entites" << std::endl;
-	std::cout << "\tcogr: Attaches or removes component groups for the entities" << std::endl;
-	std::cout << "\teanim: Attaches or removes animation references for the entities" << std::endl;
+	std::cout << "\tcomp: Adds or removes components for the entites" << std::endl;
+	std::cout << "\tcogr: Adds or removes component groups for the entities" << std::endl;
+	std::cout << "\teanim: Adds or removes animation references for the entities" << std::endl;
+	std::cout << "\tprop: Adds properties to the entities" << std::endl;
+	std::cout << "\teprop: Adds an event setting property to the entities" << std::endl;
 	std::cout << "\tnent: Create new entities" << std::endl;
 	std::cout << "\tnitm: Create new items" << std::endl;
 	std::cout << "\tnblk: Create new blocks" << std::endl;
