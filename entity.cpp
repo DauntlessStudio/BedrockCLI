@@ -299,15 +299,7 @@ void entity::properties(int argc, char* argv[])
 
 	std::string property_name = result["property"].as<std::string>();
 
-	std::vector<entity> entities;
-
-	for (const auto& file : file_manager::get_files_in_directory(file_manager::get_bp_path() + "\\entities\\" + result["directory"].as<std::string>(), result["name"].as<std::vector<std::string>>()))
-	{
-		entities.push_back(entity(file));
-	}
-
-	//filter entity list by family types
-	entities = filter_by_family(entities, result["family"].as<std::vector<std::string>>());
+	std::vector<entity> entities = get_valid_entities(result["directory"].as<std::string>(), result["family"].as<std::vector<std::string>>(), result["name"].as<std::vector<std::string>>());
 
 	//remove component group from entity list
 	for (auto& ent : entities)
@@ -395,6 +387,40 @@ std::vector<entity::entity> entity::filter_by_family(std::vector<entity>& entiti
 	return filtered_entities;
 }
 
+std::vector<entity::entity> entity::get_valid_entities(std::string directory, std::vector<std::string> families, std::vector<std::string> names)
+{
+	std::vector<entity> entities;
+
+	for (const auto& file : file_manager::get_files_in_directory(file_manager::get_bp_path() + "\\entities\\" + directory, names))
+	{
+		if (families.empty() || families[0].empty())
+		{
+			entities.push_back(entity(file));
+		}
+
+		bool contains_family_keyword = false;
+		for (const auto& family : families)
+		{
+			if (file_manager::read_file(file).find(family) != std::string::npos)
+			{
+				contains_family_keyword = true;
+				break;
+			}
+		}
+
+		if (contains_family_keyword)
+		{
+			entity ent = entity(file);
+			if (ent.contains_family_type(families))
+			{
+				entities.push_back(ent);
+			}
+		}
+	}
+
+	return entities;
+}
+
 entity::entity::entity() : entity_json(nlohmann::ordered_json()) {}
 
 entity::entity::entity(const nlohmann::ordered_json& entity) : entity_json(entity) {}
@@ -410,6 +436,7 @@ entity::entity::~entity() {}
 
 const bool entity::entity::contains_family_type(const std::string& family)
 {
+	// TODO Search file for string first, only serialize if string is found
 	if (entity_json["minecraft:entity"]["components"].contains("minecraft:type_family"))
 	{
 		if (std::find(entity_json["minecraft:entity"]["components"]["minecraft:type_family"]["family"].begin(), entity_json["minecraft:entity"]["components"]["minecraft:type_family"]["family"].end(), family) != std::end(entity_json["minecraft:entity"]["components"]["minecraft:type_family"]["family"]))
