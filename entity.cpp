@@ -107,15 +107,7 @@ void entity::component_group(int argc, char* argv[])
 		group[result["group"].as<std::string>()] = nlohmann::json::object();
 	}
 
-	std::vector<entity> entities;
-
-	for (const auto& file : file_manager::get_files_in_directory(file_manager::get_bp_path() + "\\entities\\" + result["directory"].as<std::string>(), result["name"].as<std::vector<std::string>>()))
-	{
-		entities.push_back(entity(file));
-	}
-
-	//filter entity list by family types
-	entities = filter_by_family(entities, result["family"].as<std::vector<std::string>>());
+	std::vector<entity> entities = get_valid_entities(result["directory"].as<std::string>(), result["family"].as<std::vector<std::string>>(), result["name"].as<std::vector<std::string>>());
 
 	//add component group to entity list
 	if (!result.count("remove"))
@@ -172,15 +164,7 @@ void entity::component(int argc, char* argv[])
 		return;
 	}
 
-	std::vector<entity> entities;
-
-	for (const auto& file : file_manager::get_files_in_directory(file_manager::get_bp_path() + "\\entities\\" + result["directory"].as<std::string>(), result["name"].as<std::vector<std::string>>()))
-	{
-		entities.push_back(entity(file));
-	}
-
-	//filter entity list by family types
-	entities = filter_by_family(entities, result["family"].as<std::vector<std::string>>());
+	std::vector<entity> entities = get_valid_entities(result["directory"].as<std::string>(), result["family"].as<std::vector<std::string>>(), result["name"].as<std::vector<std::string>>());
 
 	//add component to entity list
 	if (!result.count("remove"))
@@ -226,15 +210,7 @@ void entity::animation(int argc, char* argv[])
 		return;
 	}
 
-	std::vector<entity> entities;
-
-	for (const auto& file : file_manager::get_files_in_directory(file_manager::get_bp_path() + "\\entities\\" + result["directory"].as<std::string>(), result["name"].as<std::vector<std::string>>()))
-	{
-		entities.push_back(entity(file));
-	}
-
-	//filter entity list by family types
-	entities = filter_by_family(entities, result["family"].as<std::vector<std::string>>());
+	std::vector<entity> entities = get_valid_entities(result["directory"].as<std::string>(), result["family"].as<std::vector<std::string>>(), result["name"].as<std::vector<std::string>>());
 
 	std::vector<std::string> animations = result["animation"].as<std::vector<std::string>>();
 	for (auto& animation : animations)
@@ -346,15 +322,7 @@ void entity::property_event(int argc, char* argv[])
 
 	std::string property_name = result["property"].as<std::string>();
 
-	std::vector<entity> entities;
-
-	for (const auto& file : file_manager::get_files_in_directory(file_manager::get_bp_path() + "\\entities\\" + result["directory"].as<std::string>(), result["name"].as<std::vector<std::string>>()))
-	{
-		entities.push_back(entity(file));
-	}
-
-	//filter entity list by family types
-	entities = filter_by_family(entities, result["family"].as<std::vector<std::string>>());
+	std::vector<entity> entities = get_valid_entities(result["directory"].as<std::string>(), result["family"].as<std::vector<std::string>>(), result["name"].as<std::vector<std::string>>());
 
 	//remove component group from entity list
 	for (auto& ent : entities)
@@ -364,27 +332,6 @@ void entity::property_event(int argc, char* argv[])
 			ent.write_entity(result["indent"].as<int>());
 		}
 	}
-}
-
-std::vector<entity::entity> entity::filter_by_family(std::vector<entity>& entities, std::vector<std::string> families)
-{
-	families.erase(std::remove(families.begin(), families.end(), ""), families.end());
-
-	if (families.size() == 0)
-	{
-		return entities;
-	}
-
-	std::vector<entity> filtered_entities;
-	for (auto& ent : entities)
-	{
-		if (ent.contains_family_type(families))
-		{
-			filtered_entities.push_back(ent);
-		}
-	}
-
-	return filtered_entities;
 }
 
 std::vector<entity::entity> entity::get_valid_entities(std::string directory, std::vector<std::string> families, std::vector<std::string> names)

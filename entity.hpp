@@ -51,6 +51,5 @@ namespace entity
 		const nlohmann::ordered_json get_json();
 	};
 
-	std::vector<entity> filter_by_family(std::vector<entity>& entities, std::vector<std::string> families);
 	std::vector<entity> get_valid_entities(std::string directory, std::vector<std::string> families, std::vector<std::string> names);
 }
