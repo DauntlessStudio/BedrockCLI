@@ -15,72 +15,72 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="src\animation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="program_arguments.cpp">
+    <ClCompile Include="src\block.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="help.cpp">
+    <ClCompile Include="src\entity.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="item.cpp">
+    <ClCompile Include="src\file_manager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="file_manager.cpp">
+    <ClCompile Include="src\function.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="utilities.cpp">
+    <ClCompile Include="src\help.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="block.cpp">
+    <ClCompile Include="src\item.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="entity.cpp">
+    <ClCompile Include="src\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="animation.cpp">
+    <ClCompile Include="src\program_arguments.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="function.cpp">
+    <ClCompile Include="src\utilities.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="program_arguments.hpp">
+    <ClInclude Include="src\includes\animation.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="help.hpp">
+    <ClInclude Include="src\includes\block.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="main.hpp">
+    <ClInclude Include="src\includes\entity.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="extern\cxxopts\include\cxxopts.hpp">
+    <ClInclude Include="src\includes\file_manager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="extern\nlohmann\single_include\nlohmann\json.hpp">
+    <ClInclude Include="src\includes\function.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="item.hpp">
+    <ClInclude Include="src\includes\help.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="file_manager.hpp">
+    <ClInclude Include="src\includes\item.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="utilities.hpp">
+    <ClInclude Include="src\includes\main.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="block.hpp">
+    <ClInclude Include="src\includes\program_arguments.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="entity.hpp">
+    <ClInclude Include="src\includes\utilities.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="animation.hpp">
+    <ClInclude Include="src\includes\extern\nlohmann\single_include\nlohmann\json.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="function.hpp">
+    <ClInclude Include="src\includes\extern\cxxopts\include\cxxopts.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,6 +1,6 @@
 [submodule "extern/cxxopts"]
-	path = extern/cxxopts
+	path = src/includes/extern/cxxopts
 	url = https://github.com/jarro2783/cxxopts
 [submodule "extern/nlohmann"]
-	path = extern/nlohmann
+	path = src/includes/extern/nlohmann
 	url = https://github.com/nlohmann/json.git
