@@ -4,6 +4,7 @@ namespace
 {
 	static std::function<void(int argc, char* argv[])> _command = help::output_help;
 	static std::string _help = "help";
+	static std::string _version_number = "0.1.2";
 }
 
 void program_arguments::parse(int argc, char* argv[])
@@ -11,6 +12,7 @@ void program_arguments::parse(int argc, char* argv[])
 	cxxopts::Options options("bed", "Command line tool to help create bedrock addons");
 	options.add_options()
 		("h,help", "View help")
+		("v,version", "Show version number")
 		("bpath", "The path to the behavior pack root", cxxopts::value<std::string>())
 		("rpath", "The path to the resource pack root", cxxopts::value<std::string>())
 		("command", "The command to perform", cxxopts::value<std::string>());
@@ -20,6 +22,12 @@ void program_arguments::parse(int argc, char* argv[])
 
 	auto result = options.parse(argc, argv);
 	_help = options.help();
+
+	if (result.count("version"))
+	{
+		std::cout << "Version " << _version_number << std::endl;
+		exit(0);
+	}
 
 	if (result.count("command"))
 	{

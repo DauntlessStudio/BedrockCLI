@@ -51,3 +51,11 @@ Contributors names and contact info
 
 * 0.1.0
     * Initial Release
+* 0.1.1
+    * Added PROP Command
+    * Added EPROP Command
+    * Bug Fixes
+* 0.1.2
+    * Organized Folder Structure
+    * Optimizations
+    * Bug Fixes

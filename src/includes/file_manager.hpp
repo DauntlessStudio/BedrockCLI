@@ -22,4 +22,5 @@ namespace file_manager
 	std::vector<std::string> get_files_in_directory(const std::string& path, std::vector<std::string> filters);
 	std::string get_file_in_directory(const std::string& dir_path, const std::string& filename);
 	void write_file(const std::string& path, const std::string& contents);
+	std::string read_file(const std::string& path);
 }

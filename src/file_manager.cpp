@@ -269,3 +269,18 @@ void file_manager::write_file(const std::string& path, const std::string& conten
 
 	std::cout << "Wrote: " << path << std::endl;
 }
+
+std::string file_manager::read_file(const std::string& path)
+{
+	if (!std::filesystem::exists(path))
+	{
+		return std::string();
+	}
+
+	std::ifstream file(path);
+	std::stringstream f_stream;
+	f_stream << file.rdbuf();
+	std::string f_string = f_stream.str();
+
+	return f_string;
+}

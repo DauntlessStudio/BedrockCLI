@@ -107,15 +107,7 @@ void entity::component_group(int argc, char* argv[])
 		group[result["group"].as<std::string>()] = nlohmann::json::object();
 	}
 
-	std::vector<entity> entities;
-
-	for (const auto& file : file_manager::get_files_in_directory(file_manager::get_bp_path() + "\\entities\\" + result["directory"].as<std::string>(), result["name"].as<std::vector<std::string>>()))
-	{
-		entities.push_back(entity(file));
-	}
-
-	//filter entity list by family types
-	entities = filter_by_family(entities, result["family"].as<std::vector<std::string>>());
+	std::vector<entity> entities = get_valid_entities(result["directory"].as<std::string>(), result["family"].as<std::vector<std::string>>(), result["name"].as<std::vector<std::string>>());
 
 	//add component group to entity list
 	if (!result.count("remove"))
@@ -172,15 +164,7 @@ void entity::component(int argc, char* argv[])
 		return;
 	}
 
-	std::vector<entity> entities;
-
-	for (const auto& file : file_manager::get_files_in_directory(file_manager::get_bp_path() + "\\entities\\" + result["directory"].as<std::string>(), result["name"].as<std::vector<std::string>>()))
-	{
-		entities.push_back(entity(file));
-	}
-
-	//filter entity list by family types
-	entities = filter_by_family(entities, result["family"].as<std::vector<std::string>>());
+	std::vector<entity> entities = get_valid_entities(result["directory"].as<std::string>(), result["family"].as<std::vector<std::string>>(), result["name"].as<std::vector<std::string>>());
 
 	//add component to entity list
 	if (!result.count("remove"))
@@ -226,15 +210,7 @@ void entity::animation(int argc, char* argv[])
 		return;
 	}
 
-	std::vector<entity> entities;
-
-	for (const auto& file : file_manager::get_files_in_directory(file_manager::get_bp_path() + "\\entities\\" + result["directory"].as<std::string>(), result["name"].as<std::vector<std::string>>()))
-	{
-		entities.push_back(entity(file));
-	}
-
-	//filter entity list by family types
-	entities = filter_by_family(entities, result["family"].as<std::vector<std::string>>());
+	std::vector<entity> entities = get_valid_entities(result["directory"].as<std::string>(), result["family"].as<std::vector<std::string>>(), result["name"].as<std::vector<std::string>>());
 
 	std::vector<std::string> animations = result["animation"].as<std::vector<std::string>>();
 	for (auto& animation : animations)
@@ -299,15 +275,7 @@ void entity::properties(int argc, char* argv[])
 
 	std::string property_name = result["property"].as<std::string>();
 
-	std::vector<entity> entities;
-
-	for (const auto& file : file_manager::get_files_in_directory(file_manager::get_bp_path() + "\\entities\\" + result["directory"].as<std::string>(), result["name"].as<std::vector<std::string>>()))
-	{
-		entities.push_back(entity(file));
-	}
-
-	//filter entity list by family types
-	entities = filter_by_family(entities, result["family"].as<std::vector<std::string>>());
+	std::vector<entity> entities = get_valid_entities(result["directory"].as<std::string>(), result["family"].as<std::vector<std::string>>(), result["name"].as<std::vector<std::string>>());
 
 	//remove component group from entity list
 	for (auto& ent : entities)
@@ -354,15 +322,7 @@ void entity::property_event(int argc, char* argv[])
 
 	std::string property_name = result["property"].as<std::string>();
 
-	std::vector<entity> entities;
-
-	for (const auto& file : file_manager::get_files_in_directory(file_manager::get_bp_path() + "\\entities\\" + result["directory"].as<std::string>(), result["name"].as<std::vector<std::string>>()))
-	{
-		entities.push_back(entity(file));
-	}
-
-	//filter entity list by family types
-	entities = filter_by_family(entities, result["family"].as<std::vector<std::string>>());
+	std::vector<entity> entities = get_valid_entities(result["directory"].as<std::string>(), result["family"].as<std::vector<std::string>>(), result["name"].as<std::vector<std::string>>());
 
 	//remove component group from entity list
 	for (auto& ent : entities)
@@ -374,25 +334,38 @@ void entity::property_event(int argc, char* argv[])
 	}
 }
 
-std::vector<entity::entity> entity::filter_by_family(std::vector<entity>& entities, std::vector<std::string> families)
+std::vector<entity::entity> entity::get_valid_entities(std::string directory, std::vector<std::string> families, std::vector<std::string> names)
 {
-	families.erase(std::remove(families.begin(), families.end(), ""), families.end());
+	std::vector<entity> entities;
 
-	if (families.size() == 0)
+	for (const auto& file : file_manager::get_files_in_directory(file_manager::get_bp_path() + "\\entities\\" + directory, names))
 	{
-		return entities;
-	}
-
-	std::vector<entity> filtered_entities;
-	for (auto& ent : entities)
-	{
-		if (ent.contains_family_type(families))
+		if (families.empty() || families[0].empty())
 		{
-			filtered_entities.push_back(ent);
+			entities.push_back(entity(file));
+		}
+
+		bool contains_family_keyword = false;
+		for (const auto& family : families)
+		{
+			if (file_manager::read_file(file).find(family) != std::string::npos)
+			{
+				contains_family_keyword = true;
+				break;
+			}
+		}
+
+		if (contains_family_keyword)
+		{
+			entity ent = entity(file);
+			if (ent.contains_family_type(families))
+			{
+				entities.push_back(ent);
+			}
 		}
 	}
 
-	return filtered_entities;
+	return entities;
 }
 
 entity::entity::entity() : entity_json(nlohmann::ordered_json()) {}
@@ -410,6 +383,7 @@ entity::entity::~entity() {}
 
 const bool entity::entity::contains_family_type(const std::string& family)
 {
+	// TODO Search file for string first, only serialize if string is found
 	if (entity_json["minecraft:entity"]["components"].contains("minecraft:type_family"))
 	{
 		if (std::find(entity_json["minecraft:entity"]["components"]["minecraft:type_family"]["family"].begin(), entity_json["minecraft:entity"]["components"]["minecraft:type_family"]["family"].end(), family) != std::end(entity_json["minecraft:entity"]["components"]["minecraft:type_family"]["family"]))
@@ -442,14 +416,29 @@ void entity::entity::add_property(const std::string& property_name, const std::s
 	switch (index)
 	{
 	case 0: //bool
+		//TODO turn bool to string if needed
 		entity_json["minecraft:entity"]["description"]["properties"][property_name]["type"] = "bool";
 		for (const auto& val : values)
 		{
-			entity_json["minecraft:entity"]["description"]["properties"][property_name]["values"].push_back((utilities::to_lower(val) == "true" || val == "1"));
+			if (bool is_true = (utilities::to_lower(val) == "true" || val == "1") || (utilities::to_lower(val) == "false" || val == "0"))
+			{
+				entity_json["minecraft:entity"]["description"]["properties"][property_name]["values"].push_back(is_true);
+			}
+			else
+			{
+				entity_json["minecraft:entity"]["description"]["properties"][property_name]["values"].push_back(val);
+			}
 		}
 		if (!default_value.empty())
 		{
-			entity_json["minecraft:entity"]["description"]["properties"][property_name]["default"] = (utilities::to_lower(default_value) == "true" || default_value == "1");
+			if (bool is_true = (utilities::to_lower(default_value) == "true" || default_value == "1") || (utilities::to_lower(default_value) == "false" || default_value == "0"))
+			{
+				entity_json["minecraft:entity"]["description"]["properties"][property_name]["default"] = is_true;
+			}
+			else
+			{
+				entity_json["minecraft:entity"]["description"]["properties"][property_name]["default"] = default_value;
+			}
 		}
 		break;
 	case 1: //enum
@@ -467,55 +456,22 @@ void entity::entity::add_property(const std::string& property_name, const std::s
 		entity_json["minecraft:entity"]["description"]["properties"][property_name]["type"] = "float";
 		for (const auto& val : values)
 		{
-			try
-			{
-				entity_json["minecraft:entity"]["description"]["properties"][property_name]["values"].push_back(std::stod(val));
-			}
-			catch (const std::exception&)
-			{
-				std::cerr << "Cannot convert " << val << " to float" << std::endl;
-				exit(0);
-			}
+			entity_json["minecraft:entity"]["description"]["properties"][property_name]["values"].push_back(val);
 		}
 		if (!default_value.empty())
 		{
-			try
-			{
-				entity_json["minecraft:entity"]["description"]["properties"][property_name]["default"] = std::stod(default_value);
-
-			}
-			catch (const std::exception&)
-			{
-				std::cerr << "Cannot convert " << default_value << " to float" << std::endl;
-				exit(0);
-			}
+			entity_json["minecraft:entity"]["description"]["properties"][property_name]["default"] = default_value;
 		}
 		break;
 	case 3: //int
 		entity_json["minecraft:entity"]["description"]["properties"][property_name]["type"] = "int";
 		for (const auto& val : values)
 		{
-			try
-			{
-				entity_json["minecraft:entity"]["description"]["properties"][property_name]["values"].push_back(std::stoi(val));
-			}
-			catch (const std::exception&)
-			{
-				std::cerr << "Cannot convert " << val << " to int" << std::endl;
-				exit(0);
-			}
+			entity_json["minecraft:entity"]["description"]["properties"][property_name]["values"].push_back(val);
 		}
 		if (!default_value.empty())
 		{
-			try
-			{
-				entity_json["minecraft:entity"]["description"]["properties"][property_name]["default"] = std::stoi(default_value);
-			}
-			catch (const std::exception&)
-			{
-				std::cerr << "Cannot convert " << default_value << " to int" << std::endl;
-				exit(0);
-			}
+			entity_json["minecraft:entity"]["description"]["properties"][property_name]["default"] = default_value;
 		}
 		break;
 	default:
@@ -639,7 +595,14 @@ bool entity::entity::add_property_event(const std::string& property_name, const 
 	switch (index)
 	{
 	case 0: //bool
-		entity_json["minecraft:entity"]["events"]["set_" + property_no_namespace + "_" + new_value] = { {"set_property", {{property_name, utilities::to_lower(new_value) == "true" || utilities::to_lower(new_value) == "1"}}}};
+		if (bool is_true = utilities::to_lower(new_value) == "true" || utilities::to_lower(new_value) == "1" || utilities::to_lower(new_value) == "false" || utilities::to_lower(new_value) == "0")
+		{
+			entity_json["minecraft:entity"]["events"]["set_" + property_no_namespace + "_" + new_value] = { {"set_property", {{property_name, is_true}}} };
+		}
+		else
+		{
+			entity_json["minecraft:entity"]["events"]["set_" + property_no_namespace + "_" + new_value] = { {"set_property", {{property_name, new_value}}} };
+		}
 		break;
 	case 1: //enum
 		entity_json["minecraft:entity"]["events"]["set_" + property_no_namespace + "_" + new_value] = { {"set_property", {{property_name, new_value}}} };
@@ -651,8 +614,7 @@ bool entity::entity::add_property_event(const std::string& property_name, const 
 		}
 		catch (const std::exception&)
 		{
-			std::cerr << "Cannot convert " << new_value << " to float" << std::endl;
-			exit(0);
+			entity_json["minecraft:entity"]["events"]["set_" + property_no_namespace + "_" + new_value] = { {"set_property", {{property_name, new_value}}} };
 		}
 		break;
 	case 3: //int
@@ -662,8 +624,7 @@ bool entity::entity::add_property_event(const std::string& property_name, const 
 		}
 		catch (const std::exception&)
 		{
-			std::cerr << "Cannot convert " << new_value << " to float" << std::endl;
-			exit(0);
+			entity_json["minecraft:entity"]["events"]["set_" + property_no_namespace + "_" + new_value] = { {"set_property", {{property_name, new_value}}} };
 		}
 		break;
 	default:
