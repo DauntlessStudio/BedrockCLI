@@ -13,6 +13,7 @@ namespace entity
 	void animation(int argc, char* argv[]);
 	void properties(int argc, char* argv[]);
 	void property_event(int argc, char* argv[]);
+	void damage_sensor(int argc, char* argv[]);
 
 	class entity
 	{
@@ -40,6 +41,8 @@ namespace entity
 
 		void add_component(const nlohmann::ordered_json& component);
 		void remove_component(const std::string& component_name);
+
+		void add_damage_sensor(const nlohmann::ordered_json& sensor);
 
 		void add_event(const std::string& event_name, bool remove_event);
 		void remove_event(const std::string& name);

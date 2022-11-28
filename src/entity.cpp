@@ -334,6 +334,47 @@ void entity::property_event(int argc, char* argv[])
 	}
 }
 
+void entity::damage_sensor(int argc, char* argv[])
+{
+	//parse arguments
+	cxxopts::Options options("dmgs", "Attaches or removes damage sensor entries for the entities");
+	options.add_options()
+		("h,help", "View help")
+		("s,sensor", "The damage sensor to add/remove, either a name or JSON string", cxxopts::value<std::string>())
+		("i,indent", "JSON file indent", cxxopts::value<int>()->default_value("4"))
+		("f,family", "Family types to modify", cxxopts::value<std::vector<std::string>>()->default_value(""))
+		("d,directory", "Subdirectory to modify", cxxopts::value <std::string>()->default_value(""))
+		("n,name", "Filenames of entities to modify, i.e. player.json", cxxopts::value<std::vector<std::string>>()->default_value(""));
+
+	options.allow_unrecognised_options();
+	auto result = options.parse(argc, argv);
+
+	//if arguments are invalid, print help message
+	if (!result.count("sensor") || result.count("help"))
+	{
+		std::cout << options.help() << std::endl;
+		return;
+	}
+
+	nlohmann::ordered_json sensor;
+	try
+	{
+		sensor = nlohmann::ordered_json::parse(result["sensor"].as<std::string>());
+	}
+	catch (const std::exception&)
+	{
+		sensor[result["sensor"].as<std::string>()] = nlohmann::json::object();
+	}
+
+	std::vector<entity> entities = get_valid_entities(result["directory"].as<std::string>(), result["family"].as<std::vector<std::string>>(), result["name"].as<std::vector<std::string>>());
+
+	for (auto& ent : entities)
+	{
+		ent.add_damage_sensor(sensor);
+		ent.write_entity(result["indent"].as<int>());
+	}
+}
+
 std::vector<entity::entity> entity::get_valid_entities(std::string directory, std::vector<std::string> families, std::vector<std::string> names)
 {
 	std::vector<entity> entities;
@@ -557,6 +598,32 @@ void entity::entity::add_component(const nlohmann::ordered_json& component)
 void entity::entity::remove_component(const std::string& component_name)
 {
 	entity_json["minecraft:entity"]["components"].erase(component_name);
+}
+
+void entity::entity::add_damage_sensor(const nlohmann::ordered_json& sensor)
+{
+	try
+	{
+		if (entity_json["minecraft:entity"]["components"]["minecraft:damage_sensor"]["triggers"].is_object())
+		{
+			nlohmann::ordered_json old_object = entity_json["minecraft:entity"]["components"]["minecraft:damage_sensor"]["triggers"];
+			entity_json["minecraft:entity"]["components"]["minecraft:damage_sensor"]["triggers"] = nlohmann::json::array();
+			entity_json["minecraft:entity"]["components"]["minecraft:damage_sensor"]["triggers"].push_back(old_object);
+		}
+	}
+	catch (const std::exception&)
+	{
+		entity_json["minecraft:entity"]["components"]["minecraft:damage_sensor"]["triggers"] = nlohmann::json::array();
+	}
+
+	try
+	{
+		entity_json["minecraft:entity"]["components"]["minecraft:damage_sensor"]["triggers"].push_back(sensor);
+	}
+	catch (const std::exception& e)
+	{
+		std::cerr << e.what() << std::endl;
+	}
 }
 
 void entity::entity::remove_event(const std::string& name)
