@@ -1,4 +1,4 @@
-#include "help.hpp"
+#include "include/help.hpp"
 
 void help::output_help(int argc, char* argv[])
 {
