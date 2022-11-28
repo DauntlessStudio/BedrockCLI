@@ -1,4 +1,4 @@
-#include "animation.hpp"
+#include "include/animation.hpp"
 
 void animation::new_animation(int argc, char* argv[])
 {

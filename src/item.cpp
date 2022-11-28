@@ -1,4 +1,4 @@
-#include "item.hpp"
+#include "include/item.hpp"
 
 auto bp_default_item = nlohmann::ordered_json::parse(R"({ "format_version": "1.10.0", "minecraft:item": { "description": { "identifier": "namespace:name" }, "components": { "minecraft:max_stack_size": 64 } } })");
 auto bp_effect_item = nlohmann::ordered_json::parse(R"({ "format_version": "1.10.0", "minecraft:item": { "description": { "identifier": "namespace:name" }, "components": { "minecraft:use_duration": 30000, "minecraft:max_stack_size": 64, "minecraft:food": { "nutrition": 0, "saturation_modifier": "supernatural", "can_always_eat": true } } } })");

@@ -1,4 +1,4 @@
-#include "utilities.hpp"
+#include "include/utilities.hpp"
 
 std::vector<std::string> utilities::split(const std::string& val, const char& deliminator)
 {
