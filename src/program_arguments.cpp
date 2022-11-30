@@ -4,7 +4,7 @@ namespace
 {
 	static std::function<void(int argc, char* argv[])> _command = help::output_help;
 	static std::string _help = "help";
-	static std::string _version_number = "0.1.2";
+	static std::string _version_number = "0.1.3";
 }
 
 void program_arguments::parse(int argc, char* argv[])
@@ -23,7 +23,7 @@ void program_arguments::parse(int argc, char* argv[])
 	auto result = options.parse(argc, argv);
 	_help = options.help();
 
-	if (result.count("version"))
+	if (result.count("version") && !result.count("command"))
 	{
 		std::cout << "Version " << _version_number << std::endl;
 		exit(0);
@@ -52,7 +52,7 @@ void program_arguments::run_command(int argc, char* argv[])
 
 void program_arguments::assign_command(const std::string& arg)
 {
-	std::vector<std::string> command_list{"cogr", "comp", "nent", "nitm", "nblk", "anim", "ctrl", "eanim", "func", "prop", "eprop" };
+	std::vector<std::string> command_list{"cogr", "comp", "nent", "nitm", "nblk", "anim", "ctrl", "eanim", "func", "prop", "eprop", "dmgs"};
 	auto it = std::find(command_list.begin(), command_list.end(), arg);
 
 	int index = std::distance(command_list.begin(), it);
@@ -90,6 +90,9 @@ void program_arguments::assign_command(const std::string& arg)
 		break;
 	case 10: //EPROP
 		_command = entity::property_event;
+		break;
+	case 11: //DMGS
+		_command = entity::damage_sensor;
 		break;
 	default: //HELP
 		std::cout << "Unrecognized Command: " << arg << std::endl;

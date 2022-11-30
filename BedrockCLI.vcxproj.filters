@@ -47,40 +47,34 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\includes\animation.hpp">
+    <ClInclude Include="src\include\animation.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\includes\block.hpp">
+    <ClInclude Include="src\include\block.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\includes\entity.hpp">
+    <ClInclude Include="src\include\entity.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\includes\file_manager.hpp">
+    <ClInclude Include="src\include\file_manager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\includes\function.hpp">
+    <ClInclude Include="src\include\function.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\includes\help.hpp">
+    <ClInclude Include="src\include\help.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\includes\item.hpp">
+    <ClInclude Include="src\include\item.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\includes\main.hpp">
+    <ClInclude Include="src\include\main.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\includes\program_arguments.hpp">
+    <ClInclude Include="src\include\program_arguments.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\includes\utilities.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\includes\extern\nlohmann\single_include\nlohmann\json.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="src\includes\extern\cxxopts\include\cxxopts.hpp">
+    <ClInclude Include="src\include\utilities.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

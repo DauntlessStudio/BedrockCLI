@@ -4,6 +4,7 @@
 #include "help.hpp"
 #include "file_manager.hpp"
 #include "utilities.hpp"
+#include <regex>
 
 namespace entity
 {
@@ -13,6 +14,7 @@ namespace entity
 	void animation(int argc, char* argv[]);
 	void properties(int argc, char* argv[]);
 	void property_event(int argc, char* argv[]);
+	void damage_sensor(int argc, char* argv[]);
 
 	class entity
 	{
@@ -41,10 +43,12 @@ namespace entity
 		void add_component(const nlohmann::ordered_json& component);
 		void remove_component(const std::string& component_name);
 
+		void add_damage_sensor(const nlohmann::ordered_json& sensor);
+
 		void add_event(const std::string& event_name, bool remove_event);
 		void remove_event(const std::string& name);
 
-		bool add_property_event(const std::string& property_name, const std::string& new_value);
+		bool add_property_event(const std::string& property_name, const std::string& new_value, const std::string& event_name);
 
 		void write_entity(int indent = 4);
 

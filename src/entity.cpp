@@ -307,7 +307,7 @@ void entity::property_event(int argc, char* argv[])
 		("f,family", "Family types to modify", cxxopts::value<std::vector<std::string>>()->default_value(""))
 		("d,directory", "Subdirectory to modify", cxxopts::value <std::string>()->default_value(""))
 		("v,value", "New value", cxxopts::value<std::string>())
-		("s,sync", "Client sync")
+		("e,event_name", "Name of the event. Defaults to 'set_(property)_to_(value)", cxxopts::value<std::string>())
 		("n,name", "Filenames of entities to modify", cxxopts::value<std::vector<std::string>>()->default_value(""));
 
 	options.allow_unrecognised_options();
@@ -324,13 +324,67 @@ void entity::property_event(int argc, char* argv[])
 
 	std::vector<entity> entities = get_valid_entities(result["directory"].as<std::string>(), result["family"].as<std::vector<std::string>>(), result["name"].as<std::vector<std::string>>());
 
+	std::string event_name;
+	std::string value = result["value"].as<std::string>();
+
+	if (result.count("event_name"))
+	{
+		event_name = result["event_name"].as<std::string>();
+	}
+	else
+	{
+		std::string property_no_namespace = utilities::split(property_name, ":").back();
+		event_name = "set_" + property_no_namespace + "_to_" + std::regex_replace(value, std::regex("[^a-zA-Z_:0-9\+-]"), "_");
+	}
+
 	//remove component group from entity list
 	for (auto& ent : entities)
 	{
-		if (ent.add_property_event(property_name, result["value"].as<std::string>()))
+		if (ent.add_property_event(property_name, value, event_name))
 		{
 			ent.write_entity(result["indent"].as<int>());
 		}
+	}
+}
+
+void entity::damage_sensor(int argc, char* argv[])
+{
+	//parse arguments
+	cxxopts::Options options("dmgs", "Attaches or removes damage sensor entries for the entities");
+	options.add_options()
+		("h,help", "View help")
+		("s,sensor", "The damage sensor to add/remove, either a name or JSON string", cxxopts::value<std::string>())
+		("i,indent", "JSON file indent", cxxopts::value<int>()->default_value("4"))
+		("f,family", "Family types to modify", cxxopts::value<std::vector<std::string>>()->default_value(""))
+		("d,directory", "Subdirectory to modify", cxxopts::value <std::string>()->default_value(""))
+		("n,name", "Filenames of entities to modify, i.e. player.json", cxxopts::value<std::vector<std::string>>()->default_value(""));
+
+	options.allow_unrecognised_options();
+	auto result = options.parse(argc, argv);
+
+	//if arguments are invalid, print help message
+	if (!result.count("sensor") || result.count("help"))
+	{
+		std::cout << options.help() << std::endl;
+		return;
+	}
+
+	nlohmann::ordered_json sensor;
+	try
+	{
+		sensor = nlohmann::ordered_json::parse(result["sensor"].as<std::string>());
+	}
+	catch (const std::exception&)
+	{
+		sensor[result["sensor"].as<std::string>()] = nlohmann::json::object();
+	}
+
+	std::vector<entity> entities = get_valid_entities(result["directory"].as<std::string>(), result["family"].as<std::vector<std::string>>(), result["name"].as<std::vector<std::string>>());
+
+	for (auto& ent : entities)
+	{
+		ent.add_damage_sensor(sensor);
+		ent.write_entity(result["indent"].as<int>());
 	}
 }
 
@@ -416,11 +470,11 @@ void entity::entity::add_property(const std::string& property_name, const std::s
 	switch (index)
 	{
 	case 0: //bool
-		//TODO turn bool to string if needed
 		entity_json["minecraft:entity"]["description"]["properties"][property_name]["type"] = "bool";
 		for (const auto& val : values)
 		{
-			if (bool is_true = (utilities::to_lower(val) == "true" || val == "1") || (utilities::to_lower(val) == "false" || val == "0"))
+			bool is_true = utilities::to_lower(val) == "true" || val == "1";
+			if (is_true || (utilities::to_lower(val) == "false" || val == "0"))
 			{
 				entity_json["minecraft:entity"]["description"]["properties"][property_name]["values"].push_back(is_true);
 			}
@@ -431,7 +485,8 @@ void entity::entity::add_property(const std::string& property_name, const std::s
 		}
 		if (!default_value.empty())
 		{
-			if (bool is_true = (utilities::to_lower(default_value) == "true" || default_value == "1") || (utilities::to_lower(default_value) == "false" || default_value == "0"))
+			bool is_true = (utilities::to_lower(default_value) == "true" || default_value == "1");
+			if (is_true || (utilities::to_lower(default_value) == "false" || default_value == "0"))
 			{
 				entity_json["minecraft:entity"]["description"]["properties"][property_name]["default"] = is_true;
 			}
@@ -454,24 +509,50 @@ void entity::entity::add_property(const std::string& property_name, const std::s
 		break;
 	case 2: //float
 		entity_json["minecraft:entity"]["description"]["properties"][property_name]["type"] = "float";
-		for (const auto& val : values)
+		try
 		{
-			entity_json["minecraft:entity"]["description"]["properties"][property_name]["values"].push_back(val);
+			entity_json["minecraft:entity"]["description"]["properties"][property_name]["range"].push_back(std::stod(values.front()));
+			entity_json["minecraft:entity"]["description"]["properties"][property_name]["range"].push_back(std::stod(values.back()));
+		}
+		catch (const std::exception&)
+		{
+			entity_json["minecraft:entity"]["description"]["properties"][property_name]["range"].push_back(values.front());
+			entity_json["minecraft:entity"]["description"]["properties"][property_name]["range"].push_back(values.back());
 		}
 		if (!default_value.empty())
 		{
-			entity_json["minecraft:entity"]["description"]["properties"][property_name]["default"] = default_value;
+			try
+			{
+				entity_json["minecraft:entity"]["description"]["properties"][property_name]["default"] = std::stod(default_value);
+			}
+			catch (const std::exception&)
+			{
+				entity_json["minecraft:entity"]["description"]["properties"][property_name]["default"] = default_value;
+			}
 		}
 		break;
 	case 3: //int
 		entity_json["minecraft:entity"]["description"]["properties"][property_name]["type"] = "int";
-		for (const auto& val : values)
+		try
 		{
-			entity_json["minecraft:entity"]["description"]["properties"][property_name]["values"].push_back(val);
+			entity_json["minecraft:entity"]["description"]["properties"][property_name]["range"].push_back(std::stoi(values.front()));
+			entity_json["minecraft:entity"]["description"]["properties"][property_name]["range"].push_back(std::stoi(values.back()));
+		}
+		catch (const std::exception&)
+		{
+			entity_json["minecraft:entity"]["description"]["properties"][property_name]["range"].push_back(values.front());
+			entity_json["minecraft:entity"]["description"]["properties"][property_name]["range"].push_back(values.back());
 		}
 		if (!default_value.empty())
 		{
-			entity_json["minecraft:entity"]["description"]["properties"][property_name]["default"] = default_value;
+			try
+			{
+				entity_json["minecraft:entity"]["description"]["properties"][property_name]["default"] = std::stoi(default_value);
+			}
+			catch (const std::exception&)
+			{
+				entity_json["minecraft:entity"]["description"]["properties"][property_name]["default"] = default_value;
+			}
 		}
 		break;
 	default:
@@ -559,6 +640,32 @@ void entity::entity::remove_component(const std::string& component_name)
 	entity_json["minecraft:entity"]["components"].erase(component_name);
 }
 
+void entity::entity::add_damage_sensor(const nlohmann::ordered_json& sensor)
+{
+	try
+	{
+		if (entity_json["minecraft:entity"]["components"]["minecraft:damage_sensor"]["triggers"].is_object())
+		{
+			nlohmann::ordered_json old_object = entity_json["minecraft:entity"]["components"]["minecraft:damage_sensor"]["triggers"];
+			entity_json["minecraft:entity"]["components"]["minecraft:damage_sensor"]["triggers"] = nlohmann::json::array();
+			entity_json["minecraft:entity"]["components"]["minecraft:damage_sensor"]["triggers"].push_back(old_object);
+		}
+	}
+	catch (const std::exception&)
+	{
+		entity_json["minecraft:entity"]["components"]["minecraft:damage_sensor"]["triggers"] = nlohmann::json::array();
+	}
+
+	try
+	{
+		entity_json["minecraft:entity"]["components"]["minecraft:damage_sensor"]["triggers"].push_back(sensor);
+	}
+	catch (const std::exception& e)
+	{
+		std::cerr << e.what() << std::endl;
+	}
+}
+
 void entity::entity::remove_event(const std::string& name)
 {
 	entity_json["minecraft:entity"]["events"].erase("add_" + name);
@@ -574,9 +681,8 @@ void entity::entity::add_event(const std::string& event_name, bool remove_event)
 	}
 }
 
-bool entity::entity::add_property_event(const std::string& property_name, const std::string& new_value)
+bool entity::entity::add_property_event(const std::string& property_name, const std::string& new_value, const std::string& event_name)
 {
-	std::string property_no_namespace = utilities::split(property_name, ":").back();
 	std::string property_type = "";
 	try
 	{
@@ -592,39 +698,41 @@ bool entity::entity::add_property_event(const std::string& property_name, const 
 	auto it = std::find(command_list.begin(), command_list.end(), property_type);
 	int index = std::distance(command_list.begin(), it);
 
+	bool is_true = utilities::to_lower(new_value) == "true" || utilities::to_lower(new_value) == "1";
+
 	switch (index)
 	{
 	case 0: //bool
-		if (bool is_true = utilities::to_lower(new_value) == "true" || utilities::to_lower(new_value) == "1" || utilities::to_lower(new_value) == "false" || utilities::to_lower(new_value) == "0")
+		if (is_true || utilities::to_lower(new_value) == "false" || utilities::to_lower(new_value) == "0")
 		{
-			entity_json["minecraft:entity"]["events"]["set_" + property_no_namespace + "_" + new_value] = { {"set_property", {{property_name, is_true}}} };
+			entity_json["minecraft:entity"]["events"][event_name] = { {"set_property", {{property_name, is_true}}} };
 		}
 		else
 		{
-			entity_json["minecraft:entity"]["events"]["set_" + property_no_namespace + "_" + new_value] = { {"set_property", {{property_name, new_value}}} };
+			entity_json["minecraft:entity"]["events"][event_name] = { {"set_property", {{property_name, new_value}}} };
 		}
 		break;
 	case 1: //enum
-		entity_json["minecraft:entity"]["events"]["set_" + property_no_namespace + "_" + new_value] = { {"set_property", {{property_name, new_value}}} };
+		entity_json["minecraft:entity"]["events"][event_name] = { {"set_property", {{property_name, new_value}}} };
 		break;
 	case 2: //float
 		try
 		{
-			entity_json["minecraft:entity"]["events"]["set_" + property_no_namespace + "_" + new_value] = { {"set_property", {{property_name, std::stod(new_value)}}} };
+			entity_json["minecraft:entity"]["events"][event_name] = { {"set_property", {{property_name, std::stod(new_value)}}} };
 		}
 		catch (const std::exception&)
 		{
-			entity_json["minecraft:entity"]["events"]["set_" + property_no_namespace + "_" + new_value] = { {"set_property", {{property_name, new_value}}} };
+			entity_json["minecraft:entity"]["events"][event_name] = { {"set_property", {{property_name, new_value}}} };
 		}
 		break;
 	case 3: //int
 		try
 		{
-			entity_json["minecraft:entity"]["events"]["set_" + property_no_namespace + "_" + new_value] = { {"set_property", {{property_name, std::stoi(new_value)}}} };
+			entity_json["minecraft:entity"]["events"][event_name] = { {"set_property", {{property_name, std::stoi(new_value)}}} };
 		}
 		catch (const std::exception&)
 		{
-			entity_json["minecraft:entity"]["events"]["set_" + property_no_namespace + "_" + new_value] = { {"set_property", {{property_name, new_value}}} };
+			entity_json["minecraft:entity"]["events"][event_name] = { {"set_property", {{property_name, new_value}}} };
 		}
 		break;
 	default:
