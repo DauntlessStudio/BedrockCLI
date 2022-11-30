@@ -59,3 +59,6 @@ Contributors names and contact info
     * Organized Folder Structure
     * Optimizations
     * Bug Fixes
+* 0.1.3
+    * Added DMGS Command
+    * Bug Fixes

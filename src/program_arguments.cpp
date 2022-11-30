@@ -4,7 +4,7 @@ namespace
 {
 	static std::function<void(int argc, char* argv[])> _command = help::output_help;
 	static std::string _help = "help";
-	static std::string _version_number = "0.1.2";
+	static std::string _version_number = "0.1.3";
 }
 
 void program_arguments::parse(int argc, char* argv[])
