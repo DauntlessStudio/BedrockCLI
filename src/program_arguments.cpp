@@ -23,7 +23,7 @@ void program_arguments::parse(int argc, char* argv[])
 	auto result = options.parse(argc, argv);
 	_help = options.help();
 
-	if (result.count("version"))
+	if (result.count("version") && !result.count("command"))
 	{
 		std::cout << "Version " << _version_number << std::endl;
 		exit(0);
