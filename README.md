@@ -62,3 +62,5 @@ Contributors names and contact info
 * 0.1.3
     * Added DMGS Command
     * Bug Fixes
+* 0.1.4
+    * Bug Fixes
