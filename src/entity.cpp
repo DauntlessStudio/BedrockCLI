@@ -509,15 +509,18 @@ void entity::entity::add_property(const std::string& property_name, const std::s
 		break;
 	case 2: //float
 		entity_json["minecraft:entity"]["description"]["properties"][property_name]["type"] = "float";
-		try
+		if (!values.empty())
 		{
-			entity_json["minecraft:entity"]["description"]["properties"][property_name]["range"].push_back(std::stod(values.front()));
-			entity_json["minecraft:entity"]["description"]["properties"][property_name]["range"].push_back(std::stod(values.back()));
-		}
-		catch (const std::exception&)
-		{
-			entity_json["minecraft:entity"]["description"]["properties"][property_name]["range"].push_back(values.front());
-			entity_json["minecraft:entity"]["description"]["properties"][property_name]["range"].push_back(values.back());
+			try
+			{
+				entity_json["minecraft:entity"]["description"]["properties"][property_name]["range"].push_back(std::stod(values.front()));
+				entity_json["minecraft:entity"]["description"]["properties"][property_name]["range"].push_back(std::stod(values.back()));
+			}
+			catch (const std::exception&)
+			{
+				entity_json["minecraft:entity"]["description"]["properties"][property_name]["range"].push_back(values.front());
+				entity_json["minecraft:entity"]["description"]["properties"][property_name]["range"].push_back(values.back());
+			}
 		}
 		if (!default_value.empty())
 		{
@@ -533,15 +536,18 @@ void entity::entity::add_property(const std::string& property_name, const std::s
 		break;
 	case 3: //int
 		entity_json["minecraft:entity"]["description"]["properties"][property_name]["type"] = "int";
-		try
+		if (!values.empty())
 		{
-			entity_json["minecraft:entity"]["description"]["properties"][property_name]["range"].push_back(std::stoi(values.front()));
-			entity_json["minecraft:entity"]["description"]["properties"][property_name]["range"].push_back(std::stoi(values.back()));
-		}
-		catch (const std::exception&)
-		{
-			entity_json["minecraft:entity"]["description"]["properties"][property_name]["range"].push_back(values.front());
-			entity_json["minecraft:entity"]["description"]["properties"][property_name]["range"].push_back(values.back());
+			try
+			{
+				entity_json["minecraft:entity"]["description"]["properties"][property_name]["range"].push_back(std::stoi(values.front()));
+				entity_json["minecraft:entity"]["description"]["properties"][property_name]["range"].push_back(std::stoi(values.back()));
+			}
+			catch (const std::exception&)
+			{
+				entity_json["minecraft:entity"]["description"]["properties"][property_name]["range"].push_back(values.front());
+				entity_json["minecraft:entity"]["description"]["properties"][property_name]["range"].push_back(values.back());
+			}
 		}
 		if (!default_value.empty())
 		{
