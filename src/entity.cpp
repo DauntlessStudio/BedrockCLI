@@ -49,7 +49,7 @@ void entity::new_entity(int argc, char* argv[])
 			rp_entity["minecraft:client_entity"]["description"]["geometry"]["default"] = "geometry." + filename;
 			rp_entity["minecraft:client_entity"]["description"]["textures"]["default"] = "textures/entity/" + filename + "/default";
 
-			file_manager::write_json_to_file(rp_entity, file_manager::get_rp_path() + "\\entity\\" + filename + ".json", result["indent"].as<int>());
+			file_manager::write_json_to_file(rp_entity, file_manager::get_rp_path() + "\\entity\\" + filename + ".entity.json", result["indent"].as<int>());
 		}
 
 		if (result.count("model"))
@@ -57,7 +57,7 @@ void entity::new_entity(int argc, char* argv[])
 			nlohmann::ordered_json rp_geo = rp_geo_default;
 			rp_geo["minecraft:geometry"][0]["description"]["identifier"] = "geometry." + filename;
 
-			file_manager::write_json_to_file(rp_geo, file_manager::get_rp_path() + "\\models\\entity\\" + filename + ".json", result["indent"].as<int>());
+			file_manager::write_json_to_file(rp_geo, file_manager::get_rp_path() + "\\models\\entity\\" + filename + ".geo.json", result["indent"].as<int>());
 		}
 
 		if (result.count("lang"))
@@ -65,10 +65,7 @@ void entity::new_entity(int argc, char* argv[])
 			for (const auto& lang_file : result["lang"].as<std::vector<std::string>>())
 			{
 				file_manager::add_lang_entry("entity." + name + ".name=" + utilities::format_name(filename), lang_file, "entity names");
-				if (result.count("enemy") || result.count("passive"))
-				{
-					file_manager::add_lang_entry("item.spawn_egg." + name + ".name=Spawn " + utilities::format_name(filename), lang_file, "spawn eggs");
-				}
+				file_manager::add_lang_entry("item.spawn_egg." + name + ".name=Spawn " + utilities::format_name(filename), lang_file, "spawn eggs");
 			}
 		}
 	}
