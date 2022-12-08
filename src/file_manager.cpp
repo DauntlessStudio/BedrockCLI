@@ -51,6 +51,58 @@ nlohmann::ordered_json file_manager::read_json_from_file(const std::string& path
 	return object;
 }
 
+nlohmann::ordered_json file_manager::read_json_from_web_page(const char* path)
+{
+	CURL* curl;
+	CURLcode res;
+	std::string readBuffer;
+	nlohmann::ordered_json object;
+	
+	curl = curl_easy_init();
+	if (curl)
+	{
+		curl_easy_setopt(curl, CURLOPT_URL, path);
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
+
+		std::cout << "Reading Data From: " << path << std::endl;
+		res = curl_easy_perform(curl);
+		/* Check for errors */
+		if (res != CURLE_OK)
+		{
+			fprintf(stderr, "curl_easy_perform() failed: %s\n",
+				curl_easy_strerror(res));
+			return -1;
+		}
+
+		if (readBuffer.empty())
+		{
+			std::cout << "Response Was Empty..." << std::endl;
+			return -1;
+		}
+
+		try
+		{
+			object = nlohmann::ordered_json::parse(readBuffer, nullptr, true, true);
+		}
+		catch (const std::exception& e)
+		{
+			std::cerr << e.what() << std::endl;
+		}
+
+		/* always cleanup */
+		curl_easy_cleanup(curl);
+	}
+
+	return object;
+}
+
+size_t file_manager::WriteCallback(void* contents, size_t size, size_t nmemb, void* userp)
+{
+	((std::string*)userp)->append((char*)contents, size * nmemb);
+	return size * nmemb;
+}
+
 void file_manager::add_lang_entry(const std::string& entry, const std::string& filename, std::string category)
 {
 	std::string path = get_rp_path() + "\\texts\\" + filename + ".lang";
@@ -188,11 +240,11 @@ void file_manager::set_rp_path(const std::string& path)
 	utilities::replace_all(resource_pack, "/", "\\");
 }
 
-std::vector<std::string> file_manager::get_files_in_directory(const std::string& path)
+std::vector<std::string> file_manager::get_files_in_directory(const std::string& path, const bool& use_dir_path_if_invalid)
 {
-	if (!std::filesystem::exists(path))
+	if (!std::filesystem::exists(path) || !std::filesystem::is_directory(path))
 	{
-		return std::vector<std::string>();
+		return use_dir_path_if_invalid ? std::vector<std::string>(1, path) : std::vector<std::string>();
 	}
 
 	std::vector<std::string> files;

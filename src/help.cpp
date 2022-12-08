@@ -17,5 +17,6 @@ void help::output_help(int argc, char* argv[])
 	std::cout << "\tanim: Create new animation" << std::endl;
 	std::cout << "\tctrl: Create new animation controller" << std::endl;
 	std::cout << "\tfunc: Create new function" << std::endl;
+	std::cout << "\tsdef: Create new sound definition entry" << std::endl;
 	std::cout << std::endl;
 }

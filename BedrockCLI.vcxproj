@@ -152,6 +152,7 @@
     <ClCompile Include="src\item.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\program_arguments.cpp" />
+    <ClCompile Include="src\sound.cpp" />
     <ClCompile Include="src\utilities.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -164,6 +165,7 @@
     <ClInclude Include="src\include\item.hpp" />
     <ClInclude Include="src\include\main.hpp" />
     <ClInclude Include="src\include\program_arguments.hpp" />
+    <ClInclude Include="src\include\sound.hpp" />
     <ClInclude Include="src\include\utilities.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

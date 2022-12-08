@@ -4,7 +4,7 @@ namespace
 {
 	static std::function<void(int argc, char* argv[])> _command = help::output_help;
 	static std::string _help = "help";
-	static std::string _version_number = "0.1.4";
+	static std::string _version_number = "0.1.5";
 }
 
 void program_arguments::parse(int argc, char* argv[])
@@ -52,7 +52,7 @@ void program_arguments::run_command(int argc, char* argv[])
 
 void program_arguments::assign_command(const std::string& arg)
 {
-	std::vector<std::string> command_list{"cogr", "comp", "nent", "nitm", "nblk", "anim", "ctrl", "eanim", "func", "prop", "eprop", "dmgs"};
+	std::vector<std::string> command_list{"cogr", "comp", "nent", "nitm", "nblk", "anim", "ctrl", "eanim", "func", "prop", "eprop", "dmgs", "sdef"};
 	auto it = std::find(command_list.begin(), command_list.end(), arg);
 
 	int index = std::distance(command_list.begin(), it);
@@ -93,6 +93,9 @@ void program_arguments::assign_command(const std::string& arg)
 		break;
 	case 11: //DMGS
 		_command = entity::damage_sensor;
+		break;
+	case 12: //sdef
+		_command = sound::new_sound_definition;
 		break;
 	default: //HELP
 		std::cout << "Unrecognized Command: " << arg << std::endl;
