@@ -52,7 +52,7 @@ void item::new_item(int argc, char* argv[])
 		{
 			for (const auto& lang_file : result["lang"].as<std::vector<std::string>>())
 			{
-				file_manager::add_lang_entry("item." + name + ".name=" + utilities::format_name(filename), lang_file, "items");
+				file_manager::add_lang_entry("item." + name + ".name=" + utilities::format_name(filename), lang_file, "item names");
 			}
 		}
 	}

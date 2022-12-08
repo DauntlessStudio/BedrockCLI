@@ -107,7 +107,7 @@ void file_manager::add_lang_entry(const std::string& entry, const std::string& f
 {
 	std::string path = get_rp_path() + "\\texts\\" + filename + ".lang";
 	make_directory(path);
-	utilities::to_upper(category);
+	category = utilities::to_upper(category);
 
 	std::ifstream file(path);
 	std::stringstream f_stream;
