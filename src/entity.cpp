@@ -5,6 +5,8 @@ auto bp_passive_entity = nlohmann::ordered_json::parse(R"({ "format_version": "1
 auto bp_hostile_entity = nlohmann::ordered_json::parse(R"({ "format_version": "1.18.2", "minecraft:entity": { "description": { "identifier": "namespace:entity", "is_spawnable": true, "is_summonable": true, "is_experimental": false }, "component_groups": { "despawn": { "minecraft:instant_despawn": {} } }, "components": { "minecraft:is_hidden_when_invisible": {}, "minecraft:type_family": { "family": [ "namespace", "entity", "mob" ] }, "minecraft:breathable": { "total_supply": 15, "suffocate_time": 0 }, "minecraft:nameable": {}, "minecraft:pushable": { "is_pushable": true, "is_pushable_by_piston": true }, "minecraft:conditional_bandwidth_optimization": {}, "minecraft:movement": { "value": 0.25 }, "minecraft:navigation.walk": { "avoid_damage_blocks": true }, "minecraft:movement.basic": {}, "minecraft:jump.static": {}, "minecraft:can_climb": {}, "minecraft:collision_box": { "width": 0.6, "height": 1.8 }, "minecraft:physics": {}, "minecraft:despawn": { "despawn_from_distance": {} }, "minecraft:attack": { "damage": 3 }, "minecraft:behavior.nearest_prioritized_attackable_target": { "priority": 0, "entity_types":[ { "filters": { "test": "is_family", "value": "player", "subject": "other" } } ] }, "minecraft:behavior.melee_attack": { "priority": 1, "speed_multiplier": 1.2, "reach_multiplier": 2 }, "minecraft:behavior.float": { "priority": 2 }, "minecraft:behavior.panic": { "priority": 3, "speed_multiplier": 1.25 }, "minecraft:behavior.random_stroll": { "priority": 7 }, "minecraft:behavior.look_at_player": { "priority": 8, "look_distance": 6.0 }, "minecraft:behavior.random_look_around": { "priority": 9 } }, "events": { "despawn": { "add": { "component_groups": [ "despawn" ] } } } } })");
 auto rp_entity_default = nlohmann::ordered_json::parse(R"({ "format_version": "1.18.0", "minecraft:client_entity": { "description": { "identifier": "namespace:name", "min_engine_version": "1.10.0", "materials": { "default": "entity_alphatest" }, "textures": { "default": "textures/entity/name/default" }, "geometry": { "default": "geometry.name" }, "render_controllers": [ "controller.render.default" ] } } })");
 auto rp_geo_default = nlohmann::ordered_json::parse(R"({ "format_version": "1.18.0", "minecraft:geometry": [ { "description": { "identifier": "geometry.name", "texture_width": 16, "texture_height": 16, "visible_bounds_width": 2, "visible_bounds_height": 3, "visible_bounds_offset": [0, 0.5, 0] }, "bones": [ { "name": "body", "pivot": [0, 0, 0], "cubes": [ {"origin": [-8, 0, -8], "size": [16, 16, 16], "uv": [0, 0]} ] } ] } ] })");
+auto rp_player_ac_default = nlohmann::ordered_json::parse(R"({ "format_version": "1.19.10", "animation_controllers": {} })");
+auto rp_player_anim = nlohmann::ordered_json::parse(R"({ "format_version": "1.8.0", "animations": {} })");
 
 void entity::new_entity(int argc, char* argv[])
 {
@@ -68,6 +70,86 @@ void entity::new_entity(int argc, char* argv[])
 				file_manager::add_lang_entry("item.spawn_egg." + name + ".name=Spawn " + utilities::format_name(filename), lang_file, "spawn eggs");
 			}
 		}
+	}
+}
+
+void entity::player_entity(int argc, char* argv[])
+{
+	//parse arguments
+	cxxopts::Options options("nent", "Create new entities");
+	options.add_options()
+		("h,help", "View help")
+		("b,bp", "Create bp entry for entity")
+		("r,rp", "Create rp entry for entity")
+		("g,geo", "Initialize for 3D geos")
+		("i,indent", "JSON file indent", cxxopts::value<int>()->default_value("4"));
+
+	options.allow_unrecognised_options();
+	auto result = options.parse(argc, argv);
+
+	//if arguments are invalid, print help message
+	if (!result.count("bp") || !result.count("rp") || result.count("help"))
+	{
+		std::cout << options.help() << std::endl;
+		return;
+	}
+
+	//create player entity
+
+	if (result.count("rp"))
+	{
+		nlohmann::ordered_json rp_entity = file_manager::read_json_from_web_page("https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/entity/player.entity.json");
+		rp_entity = file_manager::read_json_from_file(file_manager::get_rp_path() + "\\entity\\player.entity.json", rp_entity);
+
+		if (result.count("geo"))
+		{
+			rp_entity["minecraft:client_entity"]["description"]["scripts"]["pre_animation"].push_back("v.example_weapon = q.is_item_name_any('slot.weapon.mainhand', 0, 'namespace:example');");
+			rp_entity["minecraft:client_entity"]["description"]["scripts"]["pre_animation"].push_back("v.has_custom_weapon = v.example_weapon;");
+			rp_entity["minecraft:client_entity"]["description"]["scripts"]["pre_animation"].push_back("v.dampen_left_arm_swing  = 0;");
+			rp_entity["minecraft:client_entity"]["description"]["scripts"]["pre_animation"].push_back("v.dampen_right_arm_swing = 0;");
+			rp_entity["minecraft:client_entity"]["description"]["scripts"]["pre_animation"].push_back("v.disable_arm_swing = 0;");
+			rp_entity["minecraft:client_entity"]["description"]["scripts"]["pre_animation"].push_back("v.disable_leg_swing = q.is_riding;");
+			rp_entity["minecraft:client_entity"]["description"]["scripts"]["pre_animation"].push_back("v.aim_left_arm = 0;");
+			rp_entity["minecraft:client_entity"]["description"]["scripts"]["pre_animation"].push_back("v.aim_right_arm = 0;");
+			rp_entity["minecraft:client_entity"]["description"]["scripts"]["animate"].push_back("ctrl.custom_weapon.select");
+			rp_entity["minecraft:client_entity"]["description"]["scripts"]["animate"].push_back({ {"custom_weapon.first_person.base", "v.is_first_person && v.is_custom_geometry"} });
+			rp_entity["minecraft:client_entity"]["description"]["scripts"]["animate"].push_back({ {"custom_weapon.third_person.right", "!v.is_first_person && v.is_custom_geometry && v.aim_left_arm"} });
+			rp_entity["minecraft:client_entity"]["description"]["scripts"]["animate"].push_back({ {"custom_weapon.third_person.left", "!v.is_first_person && v.is_custom_geometry && v.aim_right_arm"} });
+			rp_entity["minecraft:client_entity"]["description"]["animations"]["ctrl.custom_weapon.select"] = "controller.animation.player.custom_weapon.select";
+			rp_entity["minecraft:client_entity"]["description"]["animations"]["custom_weapon.first_person.base"] = "animation.player.custom_weapon.base_first_person_pose";
+			rp_entity["minecraft:client_entity"]["description"]["animations"]["custom_weapon.third_person.right"] = "animation.player.custom_weapon.third_person_aim_arm.right";
+			rp_entity["minecraft:client_entity"]["description"]["animations"]["custom_weapon.third_person.left"] = "animation.player.custom_weapon.third_person_aim_arm.left";
+			rp_entity["minecraft:client_entity"]["description"]["animations"]["ctrl.example_weapon"] = "controller.animation.player.custom_weapons.example_weapon";
+			rp_entity["minecraft:client_entity"]["description"]["animations"]["example_weapon.idle"] = "animation.player.example_weapon.idle";
+			rp_entity["minecraft:client_entity"]["description"]["animations"]["example_weapon.attack.first_person"] = "animation.player.example_weapon.attack.third_person";
+			rp_entity["minecraft:client_entity"]["description"]["animations"]["example_weapon.attack.third_person"] = "animation.player.example_weapon.attack.first_person";
+
+			nlohmann::ordered_json rp_anim_controller = file_manager::read_json_from_file(file_manager::get_rp_path() + "\\animation_controllers\\player.ac.json", rp_player_ac_default);
+			rp_anim_controller["animation_controllers"]["controller.animation.player.custom_weapon.select"]["initial_state"] = "no_weapon";
+			rp_anim_controller["animation_controllers"]["controller.animation.player.custom_weapon.select"]["states"]["no_weapon"]["transitions"].push_back({ { "example_weapon", "v.example_weapon" } });
+			rp_anim_controller["animation_controllers"]["controller.animation.player.custom_weapon.select"]["states"]["example_weapon"]["transitions"].push_back({ { "no_weapon", "!v.has_custom_weapon" } });
+			rp_anim_controller["animation_controllers"]["controller.animation.player.custom_weapons.example_weapon"] = nlohmann::ordered_json::parse(R"({ "initial_state": "idle", "states": { "idle": { "animations": [ "example_weapon.idle" ], "transitions": [ { "attack": "v.attack_time > 0" } ], "blend_transition": 0.2 }, "attack": { "animations": [ { "example_weapon.attack.first_person": "v.is_first_person" }, { "example_weapon.attack.third_person": "!v.is_first_person" } ], "transitions": [ { "idle": "q.any_animation_finished" } ], "blend_transition": 0.2 } } })");
+			file_manager::write_json_to_file(rp_anim_controller, file_manager::get_rp_path() + "\\animation_controllers\\player.ac.json", result["indent"].as<int>());
+
+			nlohmann::ordered_json rp_anim = file_manager::read_json_from_file(file_manager::get_rp_path() + "\\animations\\player.anim.json", rp_player_anim);
+			rp_anim["animations"]["animation.player.custom_weapon.base_first_person_pose"] = nlohmann::ordered_json::parse(R"({ "loop": true, "bones": { "root": { "rotation": [0, 180, 0], "position": [0, 0, 0] }, "leftArm": { "position": [10, 0, -5] }, "rightArm": { "position": [-10, 0, -5] } } })");
+			rp_anim["animations"]["animation.player.custom_weapon.third_person_aim_arm.right"] = nlohmann::ordered_json::parse(R"({ "loop": true, "bones": { "rightArm": { "rotation": ["q.target_x_rotation - (q.is_sneaking * 15) ", "q.target_y_rotation", 0] } } })");
+			rp_anim["animations"]["animation.player.custom_weapon.third_person_aim_arm.left"] = nlohmann::ordered_json::parse(R"({ "loop": true, "bones": { "leftArm": { "rotation": ["q.target_x_rotation - (q.is_sneaking * 15) ", "q.target_y_rotation", 0] } } })");
+			rp_anim["animations"]["animation.player.example_weapon.idle"] = nlohmann::json::object();
+			rp_anim["animations"]["animation.player.example_weapon.attack.first_person"] = nlohmann::json::object();
+			rp_anim["animations"]["animation.player.example_weapon.attack.third_person"] = nlohmann::json::object();
+			file_manager::write_json_to_file(rp_anim, file_manager::get_rp_path() + "\\animations\\player.anim.json", result["indent"].as<int>());
+		}
+
+		file_manager::write_json_to_file(rp_entity, file_manager::get_rp_path() + "\\entity\\player.entity.json", result["indent"].as<int>());
+	}
+
+	if (result.count("bp"))
+	{
+		nlohmann::ordered_json bp_entity = file_manager::read_json_from_web_page("https://raw.githubusercontent.com/Mojang/bedrock-samples/main/behavior_pack/entities/player.json");
+		bp_entity = file_manager::read_json_from_file(file_manager::get_bp_path() + "\\entities\\player.json", bp_entity);
+
+		file_manager::write_json_to_file(bp_entity, file_manager::get_bp_path() + "\\entities\\player.json", result["indent"].as<int>());
 	}
 }
 
@@ -417,6 +499,38 @@ std::vector<entity::entity> entity::get_valid_entities(std::string directory, st
 	}
 
 	return entities;
+}
+
+void entity::add_custom_weapon_entry(const std::string& weapon_name, const int& indent)
+{
+	std::string shortname = utilities::split(weapon_name, ':').back();
+
+	// Player Entity
+	nlohmann::ordered_json rp_entity = file_manager::read_json_from_web_page("https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/entity/player.entity.json");
+	rp_entity = file_manager::read_json_from_file(file_manager::get_rp_path() + "\\entity\\player.entity.json", rp_entity);
+	rp_entity["minecraft:client_entity"]["description"]["animations"]["ctrl." + shortname] = "controller.animation.player.custom_weapons." + shortname;
+	rp_entity["minecraft:client_entity"]["description"]["animations"][shortname + ".idle"] = "animation.player." + shortname + "_weapon.idle";
+	rp_entity["minecraft:client_entity"]["description"]["animations"][shortname + ".attack.first_person"] = "animation.player." + shortname + "_weapon.attack.third_person";
+	rp_entity["minecraft:client_entity"]["description"]["animations"][shortname + ".attack.third_person"] = "animation.player." + shortname + "_weapon.attack.first_person";
+	file_manager::write_json_to_file(rp_entity, file_manager::get_rp_path() + "\\entity\\player.entity.json", indent);
+
+	// Player Anim Controller
+	nlohmann::ordered_json rp_anim_controller = file_manager::read_json_from_file(file_manager::get_rp_path() + "\\animation_controllers\\player.ac.json", rp_player_ac_default);
+	rp_anim_controller["animation_controllers"]["controller.animation.player.custom_weapon.select"]["states"]["no_weapon"]["transitions"].push_back({ { shortname, "v." + shortname } });
+	rp_anim_controller["animation_controllers"]["controller.animation.player.custom_weapon.select"]["states"][shortname]["transitions"].push_back({ { "no_weapon", "!v.has_custom_weapon" } });
+
+	std::string json_string = R"({ "initial_state": "idle", "states": { "idle": { "animations": [ "example_weapon.idle" ], "transitions": [ { "attack": "v.attack_time > 0" } ], "blend_transition": 0.2 }, "attack": { "animations": [ { "example_weapon.attack.first_person": "v.is_first_person" }, { "example_weapon.attack.third_person": "!v.is_first_person" } ], "transitions": [ { "idle": "q.any_animation_finished" } ], "blend_transition": 0.2 } } })";
+	utilities::replace_all(json_string, "example_weapon", shortname);
+
+	rp_anim_controller["animation_controllers"]["controller.animation.player.custom_weapons." + shortname] = nlohmann::ordered_json::parse(json_string);
+	file_manager::write_json_to_file(rp_anim_controller, file_manager::get_rp_path() + "\\animation_controllers\\player.ac.json", indent);
+
+	// Player Animation
+	nlohmann::ordered_json rp_anim = file_manager::read_json_from_file(file_manager::get_rp_path() + "\\animations\\player.anim.json", rp_player_anim);
+	rp_anim["animations"]["animation.player." + shortname + ".idle"] = nlohmann::json::object();
+	rp_anim["animations"]["animation.player." + shortname + ".attack.first_person"] = nlohmann::json::object();
+	rp_anim["animations"]["animation.player." + shortname + ".attack.third_person"] = nlohmann::json::object();
+	file_manager::write_json_to_file(rp_anim, file_manager::get_rp_path() + "\\animations\\player.anim.json", indent);
 }
 
 entity::entity::entity() : entity_json(nlohmann::ordered_json()) {}

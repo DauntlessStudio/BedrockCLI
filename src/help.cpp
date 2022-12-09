@@ -10,6 +10,7 @@ void help::output_help(int argc, char* argv[])
 	std::cout << "\teanim: Adds or removes animation references for the entities" << std::endl;
 	std::cout << "\tprop: Adds properties to the entities" << std::endl;
 	std::cout << "\teprop: Adds an event setting property to the entities" << std::endl;
+	std::cout << "\tpent: Create player entity" << std::endl;
 	std::cout << "\tnent: Create new entities" << std::endl;
 	std::cout << "\tnitm: Create new items" << std::endl;
 	std::cout << "\tnblk: Create new blocks" << std::endl;

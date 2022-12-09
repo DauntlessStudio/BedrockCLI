@@ -9,6 +9,7 @@
 namespace entity
 {
 	void new_entity(int argc, char* argv[]);
+	void player_entity(int argc, char* argv[]);
 	void component_group(int argc, char* argv[]);
 	void component(int argc, char* argv[]);
 	void animation(int argc, char* argv[]);
@@ -56,4 +57,5 @@ namespace entity
 	};
 
 	std::vector<entity> get_valid_entities(std::string directory, std::vector<std::string> families, std::vector<std::string> names);
+	void add_custom_weapon_entry(const std::string& weapon_name, const int& indent);
 }

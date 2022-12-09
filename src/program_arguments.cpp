@@ -52,7 +52,7 @@ void program_arguments::run_command(int argc, char* argv[])
 
 void program_arguments::assign_command(const std::string& arg)
 {
-	std::vector<std::string> command_list{"cogr", "comp", "nent", "nitm", "nblk", "anim", "ctrl", "eanim", "func", "prop", "eprop", "dmgs", "sdef"};
+	std::vector<std::string> command_list{"cogr", "comp", "nent", "nitm", "nblk", "anim", "ctrl", "eanim", "func", "prop", "eprop", "dmgs", "sdef", "pent"};
 	auto it = std::find(command_list.begin(), command_list.end(), arg);
 
 	int index = std::distance(command_list.begin(), it);
@@ -96,6 +96,9 @@ void program_arguments::assign_command(const std::string& arg)
 		break;
 	case 12: //sdef
 		_command = sound::new_sound_definition;
+		break;
+	case 13: //pent
+		_command = entity::player_entity;
 		break;
 	default: //HELP
 		std::cout << "Unrecognized Command: " << arg << std::endl;
