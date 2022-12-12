@@ -149,6 +149,7 @@
     <ClCompile Include="src\file_manager.cpp" />
     <ClCompile Include="src\function.cpp" />
     <ClCompile Include="src\help.cpp" />
+    <ClCompile Include="src\include\extern\lodepng\lodepng.cpp" />
     <ClCompile Include="src\item.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\program_arguments.cpp" />
@@ -159,6 +160,7 @@
     <ClInclude Include="src\include\animation.hpp" />
     <ClInclude Include="src\include\block.hpp" />
     <ClInclude Include="src\include\entity.hpp" />
+    <ClInclude Include="src\include\extern\lodepng\lodepng.h" />
     <ClInclude Include="src\include\file_manager.hpp" />
     <ClInclude Include="src\include\function.hpp" />
     <ClInclude Include="src\include\help.hpp" />

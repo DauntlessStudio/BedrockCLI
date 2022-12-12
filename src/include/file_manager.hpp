@@ -5,6 +5,7 @@
 #include <vector>
 #include <filesystem>
 #include <curl/curl.h>
+#include "extern\lodepng\lodepng.h"
 #include "extern\nlohmann\single_include\nlohmann\json.hpp"
 #include "utilities.hpp"
 
@@ -26,4 +27,5 @@ namespace file_manager
 	std::string get_file_in_directory(const std::string& dir_path, const std::string& filename);
 	void write_file(const std::string& path, const std::string& contents);
 	std::string read_file(const std::string& path);
+	void write_blank_png(const std::string& path, unsigned width = 16, unsigned height = 16, const bool overwrite = false);
 }

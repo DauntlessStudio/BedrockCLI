@@ -4,3 +4,6 @@
 [submodule "extern/nlohmann"]
 	path = src/include/extern/nlohmann
 	url = https://github.com/nlohmann/json.git
+[submodule "src/include/extern/lodepng"]
+	path = src/include/extern/lodepng
+	url = https://github.com/lvandeve/lodepng.git

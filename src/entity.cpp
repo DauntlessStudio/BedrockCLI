@@ -111,9 +111,9 @@ void entity::player_entity(int argc, char* argv[])
 			rp_entity["minecraft:client_entity"]["description"]["scripts"]["pre_animation"].push_back("v.aim_left_arm = 0;");
 			rp_entity["minecraft:client_entity"]["description"]["scripts"]["pre_animation"].push_back("v.aim_right_arm = 0;");
 			rp_entity["minecraft:client_entity"]["description"]["scripts"]["animate"].push_back("ctrl.custom_weapon.select");
-			rp_entity["minecraft:client_entity"]["description"]["scripts"]["animate"].push_back({ {"custom_weapon.first_person.base", "v.is_first_person && v.is_custom_geometry"} });
-			rp_entity["minecraft:client_entity"]["description"]["scripts"]["animate"].push_back({ {"custom_weapon.third_person.right", "!v.is_first_person && v.is_custom_geometry && v.aim_left_arm"} });
-			rp_entity["minecraft:client_entity"]["description"]["scripts"]["animate"].push_back({ {"custom_weapon.third_person.left", "!v.is_first_person && v.is_custom_geometry && v.aim_right_arm"} });
+			rp_entity["minecraft:client_entity"]["description"]["scripts"]["animate"].push_back({ {"custom_weapon.first_person.base", "v.is_first_person && v.has_custom_weapon"} });
+			rp_entity["minecraft:client_entity"]["description"]["scripts"]["animate"].push_back({ {"custom_weapon.third_person.right", "!v.is_first_person && v.has_custom_weapon && v.aim_left_arm"} });
+			rp_entity["minecraft:client_entity"]["description"]["scripts"]["animate"].push_back({ {"custom_weapon.third_person.left", "!v.is_first_person && v.has_custom_weapon && v.aim_right_arm"} });
 			rp_entity["minecraft:client_entity"]["description"]["animations"]["ctrl.custom_weapon.select"] = "controller.animation.player.custom_weapon.select";
 			rp_entity["minecraft:client_entity"]["description"]["animations"]["custom_weapon.first_person.base"] = "animation.player.custom_weapon.base_first_person_pose";
 			rp_entity["minecraft:client_entity"]["description"]["animations"]["custom_weapon.third_person.right"] = "animation.player.custom_weapon.third_person_aim_arm.right";

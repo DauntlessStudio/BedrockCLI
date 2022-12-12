@@ -336,3 +336,30 @@ std::string file_manager::read_file(const std::string& path)
 
 	return f_string;
 }
+
+void file_manager::write_blank_png(const std::string& path, unsigned width, unsigned height, const bool overwrite)
+{
+	std::vector<unsigned char> png;
+
+	//generate some image;
+	std::vector<unsigned char> image;
+	image.resize(width * height * 4);
+	for (unsigned y = 0; y < height; y++)
+		for (unsigned x = 0; x < width; x++)
+		{
+			image[4 * width * y + 4 * x + 0] = 255 * !(x & y);
+			image[4 * width * y + 4 * x + 1] = x ^ y;
+			image[4 * width * y + 4 * x + 2] = x | y;
+			image[4 * width * y + 4 * x + 3] = 255;
+		}
+
+	unsigned error = lodepng::encode(png, image, width, height);
+	if (!error && !(!overwrite && std::filesystem::exists(path)))
+	{
+		lodepng::save_file(png, path);
+		std::cout << "Wrote: " << path << std::endl;
+	}
+
+	//if there's an error, display it
+	if (error) std::cout << "encoder error " << error << ": " << lodepng_error_text(error) << std::endl;
+}
