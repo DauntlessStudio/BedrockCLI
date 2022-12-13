@@ -10,6 +10,9 @@
 #include "entity.hpp"
 #include "animation.hpp"
 #include "function.hpp"
+#include "sound.hpp"
+#include "package_manager.hpp"
+#include "utilities.hpp"
 #include <stdexcept>
 #include <iostream>
 #include "extern\cxxopts\include\cxxopts.hpp"

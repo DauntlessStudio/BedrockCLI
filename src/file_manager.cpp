@@ -7,6 +7,7 @@ namespace
 	std::string resource_pack;
 	std::string bp_subname = "behavior_packs";
 	std::string rp_subname = "resource_packs";
+	std::vector<std::string> curl_headers;
 }
 
 void file_manager::write_json_to_file(const nlohmann::ordered_json& object, const std::string& path, int indent)
@@ -20,10 +21,10 @@ void file_manager::write_json_to_file(const nlohmann::ordered_json& object, cons
 	}
 	catch (const std::exception& e)
 	{
-		std::cerr << "Error writing JSON at: " << path << std::endl << e.what() << std::endl;
+		std::cerr << RED << "Error writing JSON at: " << path << std::endl << e.what() << WHITE << std::endl;
 	}
 
-	std::cout << "Saved JSON at: " << path << std::endl;
+	std::cout << GREEN << "Saved JSON at: " << path << WHITE << std::endl;
 	output.close();
 }
 
@@ -51,11 +52,47 @@ nlohmann::ordered_json file_manager::read_json_from_file(const std::string& path
 	return object;
 }
 
+nlohmann::ordered_json file_manager::read_json_from_web_page(const std::string& path, const std::vector<std::string>& headers)
+{
+	nlohmann::ordered_json object;
+
+	/* Parse to JSON */
+	try
+	{
+		object = nlohmann::ordered_json::parse(read_string_from_web_page(path, headers), nullptr, true, true);
+	}
+	catch (const std::exception& e)
+	{
+		std::cerr << e.what() << std::endl;
+	}
+
+	return object;
+}
+
+size_t file_manager::WriteCallback(void* contents, size_t size, size_t nmemb, void* userp)
+{
+	((std::string*)userp)->append((char*)contents, size * nmemb);
+	return size * nmemb;
+}
+
+size_t file_manager::WriteOstream(void* buf, size_t size, size_t nmemb, void* userp)
+{
+	if (userp)
+	{
+		std::ostream& os = *static_cast<std::ostream*>(userp);
+		std::streamsize len = size * nmemb;
+		if (os.write(static_cast<char*>(buf), len))
+			return len;
+	}
+
+	return 0;
+}
+
 void file_manager::add_lang_entry(const std::string& entry, const std::string& filename, std::string category)
 {
 	std::string path = get_rp_path() + "\\texts\\" + filename + ".lang";
 	make_directory(path);
-	utilities::to_upper(category);
+	category = utilities::to_upper(category);
 
 	std::ifstream file(path);
 	std::stringstream f_stream;
@@ -96,7 +133,7 @@ void file_manager::add_lang_entry(const std::string& entry, const std::string& f
 	}
 	output.close();
 
-	std::cout << "Added line to lang at: " << path << std::endl;
+	std::cout << GREEN << "Added line to lang at: " << path << WHITE << std::endl;
 }
 
 void file_manager::make_directory(const std::string& path)
@@ -106,7 +143,7 @@ void file_manager::make_directory(const std::string& path)
 	std::filesystem::path dir(tmp);
 	if (!std::filesystem::exists(dir))
 	{
-		std::cout << "Directory Doesn't Exist. Creating..." << std::endl;
+		std::cout << YELLOW << "Directory Doesn't Exist. Creating..." << WHITE << std::endl;
 		std::filesystem::create_directories(dir);
 	}
 }
@@ -188,11 +225,11 @@ void file_manager::set_rp_path(const std::string& path)
 	utilities::replace_all(resource_pack, "/", "\\");
 }
 
-std::vector<std::string> file_manager::get_files_in_directory(const std::string& path)
+std::vector<std::string> file_manager::get_files_in_directory(const std::string& path, const bool& use_dir_path_if_invalid)
 {
-	if (!std::filesystem::exists(path))
+	if (!std::filesystem::exists(path) || !std::filesystem::is_directory(path))
 	{
-		return std::vector<std::string>();
+		return use_dir_path_if_invalid ? std::vector<std::string>(1, path) : std::vector<std::string>();
 	}
 
 	std::vector<std::string> files;
@@ -267,7 +304,7 @@ void file_manager::write_file(const std::string& path, const std::string& conten
 
 	output.close();
 
-	std::cout << "Wrote: " << path << std::endl;
+	std::cout << GREEN << "Wrote: " << path << WHITE << std::endl;
 }
 
 std::string file_manager::read_file(const std::string& path)
@@ -283,4 +320,161 @@ std::string file_manager::read_file(const std::string& path)
 	std::string f_string = f_stream.str();
 
 	return f_string;
+}
+
+std::string file_manager::read_string_from_web_page(const std::string& path, const std::vector<std::string>& headers)
+{
+	CURL* curl;
+	CURLcode res;
+	std::string readBuffer;
+
+	curl_global_init(CURL_GLOBAL_ALL);
+	curl = curl_easy_init();
+	if (curl)
+	{
+		struct curl_slist* curl_headers = NULL;
+		curl_easy_setopt(curl, CURLOPT_URL, path.c_str());
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
+
+		/* Handle headers */
+		for (const auto& header : headers)
+		{
+			curl_headers = curl_headers = curl_slist_append(curl_headers, header.c_str());
+		}
+		if (headers.size() > 0)
+		{
+			curl_easy_setopt(curl, CURLOPT_HTTPHEADER, curl_headers);
+		}
+
+		res = curl_easy_perform(curl);
+		curl_slist_free_all(curl_headers);
+
+		/* Check for errors */
+		if (res != CURLE_OK)
+		{
+			fprintf(stderr, "curl_easy_perform() failed: %s\n",
+				curl_easy_strerror(res));
+			return "";
+		}
+
+		if (readBuffer.empty())
+		{
+			std::cout << "Response Was Empty..." << std::endl;
+			return "";
+		}
+
+		/* always cleanup */
+		curl_easy_cleanup(curl);
+	}
+
+	return readBuffer;
+}
+
+void file_manager::write_file_from_web_page(const std::string& url, const std::string& filepath, const std::vector<std::string>& headers)
+{
+	make_directory(filepath);
+
+	CURL* curl;
+	CURLcode res;
+	std::ofstream write_stream(filepath, std::ostream::binary);
+
+	std::cout << GREEN << "Writing to: " << filepath << WHITE << std::endl;
+
+	curl_global_init(CURL_GLOBAL_ALL);
+	curl = curl_easy_init();
+	if (curl)
+	{
+		struct curl_slist* curl_headers = NULL;
+		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteOstream);
+		curl_easy_setopt(curl, CURLOPT_FILE, &write_stream);
+
+		/* Handle headers */
+		for (const auto& header : headers)
+		{
+			curl_headers = curl_headers = curl_slist_append(curl_headers, header.c_str());
+		}
+		if (headers.size() > 0)
+		{
+			curl_easy_setopt(curl, CURLOPT_HTTPHEADER, curl_headers);
+		}
+
+		res = curl_easy_perform(curl);
+		curl_slist_free_all(curl_headers);
+
+		/* Check for errors */
+		if (res != CURLE_OK)
+		{
+			RED;
+			fprintf(stderr, "curl_easy_perform() failed: %s\n",
+				curl_easy_strerror(res));
+			WHITE;
+			return;
+		}
+
+		if (write_stream.bad())
+		{
+			std::cout << RED << "Invalid Write..." << WHITE << std::endl;
+			return;
+		}
+
+		/* always cleanup */
+		curl_easy_cleanup(curl);
+	}
+
+	write_stream.close();
+}
+
+void file_manager::write_blank_png(const std::string& path, unsigned width, unsigned height, const bool overwrite)
+{
+	std::vector<unsigned char> png;
+
+	//generate some image;
+	std::vector<unsigned char> image;
+	image.resize(width * height * 4);
+	for (unsigned y = 0; y < height; y++)
+		for (unsigned x = 0; x < width; x++)
+		{
+			image[4 * width * y + 4 * x + 0] = 255 * !(x & y);
+			image[4 * width * y + 4 * x + 1] = x ^ y;
+			image[4 * width * y + 4 * x + 2] = x | y;
+			image[4 * width * y + 4 * x + 3] = 255;
+		}
+
+	unsigned error = lodepng::encode(png, image, width, height);
+	if (!error && !(!overwrite && std::filesystem::exists(path)))
+	{
+		lodepng::save_file(png, path);
+		std::cout << GREEN << "Wrote: " << path << WHITE << std::endl;
+	}
+
+	//if there's an error, display it
+	if (error) std::cout << "encoder error " << error << ": " << lodepng_error_text(error) << std::endl;
+}
+
+std::vector<std::string> file_manager::get_headers()
+{
+	if (curl_headers.size() > 0)
+	{
+		return curl_headers;
+	}
+
+	std::vector<std::string> headers;
+	char* buf = nullptr;
+	char* auth_token = nullptr;
+	size_t sz = 0;
+	if (_dupenv_s(&buf, &sz, "GITHUB_TOKEN") == 0 && buf != nullptr)
+	{
+		std::string auth_token = "Authorization: Bearer " + std::string(buf);
+		headers.push_back(auth_token);
+		free(buf);
+	}
+
+	headers.push_back("Accept: application/vnd.github+json");
+	headers.push_back("X-GitHub-Api-Version: 2022-11-28");
+	headers.push_back("User-Agent: BedrockCLI");
+
+	curl_headers = headers;
+	return headers;
 }

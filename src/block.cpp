@@ -54,7 +54,7 @@ void block::new_block(int argc, char* argv[])
 		{
 			for (const auto& lang_file : result["lang"].as<std::vector<std::string>>())
 			{
-				file_manager::add_lang_entry("tile." + name + ".name=" + utilities::format_name(filename), lang_file, "blocks");
+				file_manager::add_lang_entry("tile." + name + ".name=" + utilities::format_name(filename), lang_file, "Block Names");
 			}
 		}
 	}

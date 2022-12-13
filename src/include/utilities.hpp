@@ -4,6 +4,13 @@
 #include <algorithm>
 #include <sstream>
 #include <iostream>
+#include <Windows.h>
+
+#define YELLOW utilities::color(6)
+#define CYAN utilities::color(3)
+#define RED utilities::color(4)
+#define GREEN utilities::color(2)
+#define WHITE utilities::color(7)
 
 namespace utilities
 {
@@ -14,6 +21,7 @@ namespace utilities
 	std::string to_lower(const std::string& str);
 	std::string format_name(const std::string& str);
 	std::string vector_to_string(const std::vector<std::string>& vec);
+	std::string color(int color_code);
 
 	template<class T>
 	void push_back_if(std::vector<T>& vector, const T& val, const bool& condition);
