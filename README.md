@@ -14,8 +14,9 @@ This program provides useful tools to quickly perfom laborious or repetitive tas
 
 ### Installing
 
-* Download the .exe or build from source
-* For ease of use the folder containing the .exe can be referenced in your system environment path.
+* Download the .zip from the [Latest Release](https://github.com/DauntlessStudio/BedrockCLI/releases/latest)
+* Extract the .zip anywhere on your machine (i.e. Downloads/BedrockCLI)
+* Right Click the install.bat file and `Run as administrator`
 
 ### Executing program
 
@@ -40,6 +41,8 @@ For help with a specific command use:
 ```
 bed <command> -h, --help
 ```
+### Command List
+You can find specific documentation for all commands [here](documentation/commands.md)
 
 ## Authors
 
@@ -64,3 +67,8 @@ Contributors names and contact info
     * Bug Fixes
 * 0.1.4
     * Bug Fixes
+* 0.1.5
+    * Added PKG Command
+    * Added --Attachable Arg to NITM
+    * Added PENT Command
+    * Added Version Checking
