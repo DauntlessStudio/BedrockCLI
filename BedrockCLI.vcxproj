@@ -88,7 +88,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -103,7 +103,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -152,6 +152,7 @@
     <ClCompile Include="src\include\extern\lodepng\lodepng.cpp" />
     <ClCompile Include="src\item.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\package_manager.cpp" />
     <ClCompile Include="src\program_arguments.cpp" />
     <ClCompile Include="src\sound.cpp" />
     <ClCompile Include="src\utilities.cpp" />
@@ -166,6 +167,7 @@
     <ClInclude Include="src\include\help.hpp" />
     <ClInclude Include="src\include\item.hpp" />
     <ClInclude Include="src\include\main.hpp" />
+    <ClInclude Include="src\include\package_manager.hpp" />
     <ClInclude Include="src\include\program_arguments.hpp" />
     <ClInclude Include="src\include\sound.hpp" />
     <ClInclude Include="src\include\utilities.hpp" />

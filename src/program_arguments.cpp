@@ -4,7 +4,7 @@ namespace
 {
 	static std::function<void(int argc, char* argv[])> _command = help::output_help;
 	static std::string _help = "help";
-	static std::string _version_number = "0.1.5";
+	static std::string _version_number = "v0.1.4"; //TODO update to 0.1.5
 }
 
 void program_arguments::parse(int argc, char* argv[])
@@ -25,7 +25,7 @@ void program_arguments::parse(int argc, char* argv[])
 
 	if (result.count("version") && !result.count("command"))
 	{
-		std::cout << "Version " << _version_number << std::endl;
+		std::cout << "Local Version: " << _version_number << std::endl;
 		exit(0);
 	}
 
@@ -48,11 +48,19 @@ void program_arguments::parse(int argc, char* argv[])
 void program_arguments::run_command(int argc, char* argv[])
 {
 	_command(argc, argv);
+
+	// check if this is an out of date version
+	nlohmann::ordered_json public_version = file_manager::read_json_from_web_page("https://api.github.com/repos/DauntlessStudio/BedrockCLI/releases/latest", file_manager::get_headers());
+	if (_version_number != public_version["name"])
+	{
+		std::cout << std::endl << "Out of date. " << YELLOW << "Current version is: " << public_version["name"] << ". Your version is : " << _version_number << WHITE << std::endl;
+		std::cout << "Download new version at: " << CYAN << public_version["html_url"] << WHITE << std::endl;
+	}
 }
 
 void program_arguments::assign_command(const std::string& arg)
 {
-	std::vector<std::string> command_list{"cogr", "comp", "nent", "nitm", "nblk", "anim", "ctrl", "eanim", "func", "prop", "eprop", "dmgs", "sdef", "pent"};
+	std::vector<std::string> command_list{"cogr", "comp", "nent", "nitm", "nblk", "anim", "ctrl", "eanim", "func", "prop", "eprop", "dmgs", "sdef", "pent", "pkg"};
 	auto it = std::find(command_list.begin(), command_list.end(), arg);
 
 	int index = std::distance(command_list.begin(), it);
@@ -99,6 +107,9 @@ void program_arguments::assign_command(const std::string& arg)
 		break;
 	case 13: //pent
 		_command = entity::player_entity;
+		break;
+	case 14: //pkg
+		_command = package_manager::import_package;
 		break;
 	default: //HELP
 		std::cout << "Unrecognized Command: " << arg << std::endl;

@@ -76,7 +76,7 @@ void entity::new_entity(int argc, char* argv[])
 void entity::player_entity(int argc, char* argv[])
 {
 	//parse arguments
-	cxxopts::Options options("nent", "Create new entities");
+	cxxopts::Options options("pent", "Add player entity");
 	options.add_options()
 		("h,help", "View help")
 		("b,bp", "Create bp entry for entity")
@@ -88,7 +88,7 @@ void entity::player_entity(int argc, char* argv[])
 	auto result = options.parse(argc, argv);
 
 	//if arguments are invalid, print help message
-	if (!result.count("bp") || !result.count("rp") || result.count("help"))
+	if (!(result.count("bp") || result.count("rp")) || result.count("help"))
 	{
 		std::cout << options.help() << std::endl;
 		return;
@@ -402,7 +402,7 @@ void entity::property_event(int argc, char* argv[])
 	else
 	{
 		std::string property_no_namespace = utilities::split(property_name, ":").back();
-		event_name = "set_" + property_no_namespace + "_to_" + std::regex_replace(value, std::regex("[^a-zA-Z_:0-9\+-]"), "_");
+		event_name = "set_" + property_no_namespace + "_to_" + std::regex_replace(value, std::regex("[^a-zA-Z_:0-9\\+-]"), "_");
 	}
 
 	//remove component group from entity list

@@ -89,6 +89,12 @@ std::string utilities::vector_to_string(const std::vector<std::string>& vec)
     return s;
 }
 
+std::string utilities::color(int color_code)
+{
+    SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), color_code);
+    return std::string();
+}
+
 
 template<class T>
 void utilities::push_back_if(std::vector<T>& vector, const T& val, const bool& condition)
