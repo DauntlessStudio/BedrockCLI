@@ -33,33 +33,31 @@ void item::new_item(int argc, char* argv[])
 	//create items
 	for (auto name : result["name"].as<std::vector<std::string>>())
 	{
-
-		std::string filename = utilities::split(name, ':').back();
-		std::string namespace_name = utilities::split(name, ':').front();
+		utilities::name item_name = utilities::name(name);
 
 		nlohmann::ordered_json item_bp = result["edible"].as<bool>() ? bp_effect_item : bp_default_item;
 		nlohmann::ordered_json item_rp = rp_default_item;
 
-		item_bp["minecraft:item"]["description"]["identifier"] = name;
+		item_bp["minecraft:item"]["description"]["identifier"] = item_name.internal_name;
 		item_bp["minecraft:item"]["components"]["minecraft:max_stack_size"] = result["stack"].as<int>();
 
-		item_rp["minecraft:item"]["description"]["identifier"] = name;
-		item_rp["minecraft:item"]["components"]["minecraft:icon"] = filename;
+		item_rp["minecraft:item"]["description"]["identifier"] = item_name.internal_name;
+		item_rp["minecraft:item"]["components"]["minecraft:icon"] = item_name.shortname;
 
-		file_manager::write_json_to_file(item_bp, file_manager::get_bp_path() + "\\items\\" + filename + ".json", result["indent"].as<int>());
-		file_manager::write_json_to_file(item_rp, file_manager::get_rp_path() + "\\items\\" + filename + ".json", result["indent"].as<int>());
+		file_manager::write_json_to_file(item_bp, file_manager::get_bp_path() + "\\items\\" + item_name.shortname + ".json", result["indent"].as<int>());
+		file_manager::write_json_to_file(item_rp, file_manager::get_rp_path() + "\\items\\" + item_name.shortname + ".json", result["indent"].as<int>());
 
 		//modify textures/item_texture.json
 		nlohmann::ordered_json item_texture = file_manager::read_json_from_file(file_manager::get_rp_path() + "\\textures\\item_texture.json", rp_item_texture);
-		item_texture["texture_data"][filename] = { {"textures", "textures/items/" + filename} };
+		item_texture["texture_data"][item_name.shortname] = { {"textures", "textures/items/" + item_name.filename} };
 		file_manager::write_json_to_file(item_texture, file_manager::get_rp_path() + "\\textures\\item_texture.json", result["indent"].as<int>());
-		file_manager::write_blank_png(file_manager::get_rp_path() + "\\textures\\items\\" + filename + ".png");
+		file_manager::write_blank_png(file_manager::get_rp_path() + "\\textures\\items\\" + item_name.filename + ".png");
 
 		if (result.count("lang"))
 		{
 			for (const auto& lang_file : result["lang"].as<std::vector<std::string>>())
 			{
-				file_manager::add_lang_entry("item." + name + ".name=" + utilities::format_name(filename), lang_file, "item names");
+				file_manager::add_lang_entry("item." + item_name.internal_name + ".name=" + utilities::format_name(item_name.shortname), lang_file, "item names");
 			}
 		}
 
@@ -67,17 +65,17 @@ void item::new_item(int argc, char* argv[])
 		{
 			//handle attachable
 			std::string attach_string = attachable_default;
-			utilities::replace_all(attach_string, "example_weapon", filename);
-			utilities::replace_all(attach_string, "namespace", namespace_name);
-			file_manager::write_json_to_file(nlohmann::ordered_json::parse(attach_string), file_manager::get_rp_path() + "\\attachables\\" + filename + ".json", result["indent"].as<int>());
+			utilities::replace_all(attach_string, "example_weapon", item_name.shortname);
+			utilities::replace_all(attach_string, "namespace", item_name.space);
+			file_manager::write_json_to_file(nlohmann::ordered_json::parse(attach_string), file_manager::get_rp_path() + "\\attachables\\" + item_name.filename + ".json", result["indent"].as<int>());
 
 			//player geo
 			nlohmann::ordered_json player_geo = rp_player_geo;
-			player_geo["minecraft:geometry"][0]["description"]["identifier"] = "geometry.player." + filename;
-			file_manager::write_json_to_file(player_geo, file_manager::get_rp_path() + "\\models\\entity\\player\\" + filename + ".geo.json", result["indent"].as<int>());
+			player_geo["minecraft:geometry"][0]["description"]["identifier"] = "geometry.player." + item_name.shortname;
+			file_manager::write_json_to_file(player_geo, file_manager::get_rp_path() + "\\models\\entity\\player\\" + item_name.shortname + ".geo.json", result["indent"].as<int>());
 
 			//add to player
-			entity::add_custom_weapon_entry(name, result["indent"].as<int>());
+			entity::add_custom_weapon_entry(item_name.internal_name, result["indent"].as<int>());
 		}
 	}
 }

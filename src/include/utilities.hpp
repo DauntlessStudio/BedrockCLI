@@ -25,4 +25,16 @@ namespace utilities
 
 	template<class T>
 	void push_back_if(std::vector<T>& vector, const T& val, const bool& condition);
+
+	struct name
+	{
+	public:
+		name();
+		name(const std::string input);
+		std::string dir;
+		std::string space;
+		std::string shortname;
+		std::string filename;
+		std::string internal_name;
+	};
 }

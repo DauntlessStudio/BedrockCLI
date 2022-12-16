@@ -104,3 +104,31 @@ void utilities::push_back_if(std::vector<T>& vector, const T& val, const bool& c
         vector.push_back(val);
     }
 }
+
+utilities::name::name()
+{
+}
+
+utilities::name::name(const std::string input)
+{
+    name::dir;
+    std::string dir_input = input;
+    utilities::replace_all(dir_input, "/", "\\");
+    std::vector<std::string> parts = utilities::split(dir_input, "\\");
+    std::for_each(parts.begin(), parts.end() -1, [&](const std::string& piece) { dir += piece + "\\"; });
+
+    name::space = utilities::split(parts.back(), ":").front();
+    name::filename = name::dir + utilities::split(parts.back(), ":").back();
+
+    name::shortname = utilities::split(parts.back(), ":").back();
+    if (name::shortname.find('.') != std::string::npos)
+    {
+        parts = utilities::split(name::shortname, ".");
+        name::shortname = "";
+        std::for_each(parts.begin(), parts.end() - 1, [&](const std::string& piece) { shortname += piece; });
+    }
+
+    name::internal_name = name::space + ":" + name::shortname;
+
+    std::cout << " Directory: " << dir << " Namespace: " << space << " Filename: " << filename << " Shortname: " << shortname << " Internal: " << internal_name << std::endl;
+}
