@@ -50,6 +50,11 @@ void block::new_block(int argc, char* argv[])
 		item_texture["texture_data"][filename] = { {"textures", "textures/blocks/" + filename} };
 		file_manager::write_json_to_file(item_texture, file_manager::get_rp_path() + "\\textures\\terrain_texture.json", result["indent"].as<int>());
 
+		//modify blocks.json
+		nlohmann::ordered_json blocks = file_manager::read_json_from_file(file_manager::get_rp_path() + "\\blocks.json", nlohmann::json::object());
+		blocks[filename] = { {"textures", filename}, {"sound", "obsidian"}};
+		file_manager::write_json_to_file(blocks, file_manager::get_rp_path() + "\\blocks.json", result["indent"].as<int>());
+
 		if (result.count("lang"))
 		{
 			for (const auto& lang_file : result["lang"].as<std::vector<std::string>>())
