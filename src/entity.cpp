@@ -473,8 +473,9 @@ std::vector<entity::entity> entity::get_valid_entities(std::string directory, st
 			if (file_manager::read_file(file).find(family) != std::string::npos)
 			{
 				contains_family_keyword = true;
-				break;
+				continue;
 			}
+			contains_family_keyword = false;
 		}
 
 		if (contains_family_keyword)
@@ -565,30 +566,15 @@ entity::entity::entity(const nlohmann::ordered_json& entity, const std::string& 
 
 entity::entity::~entity() {}
 
-const bool entity::entity::contains_family_type(const std::string& family)
-{
-	// TODO Search file for string first, only serialize if string is found
-	if (entity_json["minecraft:entity"]["components"].contains("minecraft:type_family"))
-	{
-		if (std::find(entity_json["minecraft:entity"]["components"]["minecraft:type_family"]["family"].begin(), entity_json["minecraft:entity"]["components"]["minecraft:type_family"]["family"].end(), family) != std::end(entity_json["minecraft:entity"]["components"]["minecraft:type_family"]["family"]))
-		{
-			return true;
-		};
-	}
-	return false;
-}
-
 const bool entity::entity::contains_family_type(const std::vector<std::string>& families)
 {
-	for (const auto& family : families)
-	{
-		if (contains_family_type(family))
-		{
-			return true;
-		}
-	}
+	std::vector<std::string> ent_family = entity_json["minecraft:entity"]["components"]["minecraft:type_family"]["family"];
+	std::vector<std::string> search_family = families;
 
-	return false;
+	std::sort(ent_family.begin(), ent_family.end());
+	std::sort(search_family.begin(), search_family.end());
+
+	return std::includes(ent_family.begin(), ent_family.end(), search_family.begin(), search_family.end());
 }
 
 void entity::entity::add_property(const std::string& property_name, const std::string& type, const std::vector<std::string>& values, const std::string& default_value, const bool& sync)
