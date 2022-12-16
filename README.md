@@ -72,3 +72,7 @@ Contributors names and contact info
     * Added --Attachable Arg to NITM
     * Added PENT Command
     * Added Version Checking
+* 0.1.6
+    * --Family Arg is Now Mutually Inclusive
+    * Supports Nested Files i.e. `bed nent -n foo/bar:entity`
+    * Bug Fixes
