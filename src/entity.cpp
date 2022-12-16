@@ -1,6 +1,6 @@
 #include "include/entity.hpp"
 
-auto bp_dummy_entity = nlohmann::ordered_json::parse(R"({ "format_version": "1.18.0", "minecraft:entity": { "description": { "identifier": "namespace:name", "is_spawnable": true, "is_summonable": true, "is_experimental": false }, "component_groups": { "instant_despawn": { "minecraft:instant_despawn": {} } }, "components": { "minecraft:type_family": { "family": [ "namespace", "name" ] }, "minecraft:collision_box": { "height": 0, "width": 0 }, "minecraft:physics": { "has_collision": false, "has_gravity": false }, "minecraft:damage_sensor": { "triggers": [ { "on_damage": { "filters": { "test": "has_damage", "value": "void" }, "event": "despawn" }, "deals_damage": false }, { "cause": "all", "deals_damage": false } ] } }, "events": { "despawn": { "add": { "component_groups": [ "instant_despawn" ] } } } } })");
+auto bp_dummy_entity = nlohmann::ordered_json::parse(R"({ "format_version": "1.18.0", "minecraft:entity": { "description": { "identifier": "namespace:name", "is_spawnable": false, "is_summonable": true, "is_experimental": false }, "component_groups": { "instant_despawn": { "minecraft:instant_despawn": {} } }, "components": { "minecraft:type_family": { "family": [ "namespace", "name" ] }, "minecraft:collision_box": { "height": 0, "width": 0 }, "minecraft:physics": { "has_collision": false, "has_gravity": false }, "minecraft:damage_sensor": { "triggers": [ { "on_damage": { "filters": { "test": "has_damage", "value": "void" }, "event": "despawn" }, "deals_damage": false }, { "cause": "all", "deals_damage": false } ] } }, "events": { "despawn": { "add": { "component_groups": [ "instant_despawn" ] } } } } })");
 auto bp_passive_entity = nlohmann::ordered_json::parse(R"({ "format_version": "1.18.2", "minecraft:entity": { "description": { "identifier": "namespace:entity", "is_spawnable": true, "is_summonable": true, "is_experimental": false }, "component_groups": { "despawn": { "minecraft:instant_despawn": {} } }, "components": { "minecraft:is_hidden_when_invisible": {}, "minecraft:type_family": { "family": [ "mob", "namespace", "name" ] }, "minecraft:breathable": { "total_supply": 15, "suffocate_time": 0 }, "minecraft:nameable": {}, "minecraft:pushable": { "is_pushable": true, "is_pushable_by_piston": true }, "minecraft:conditional_bandwidth_optimization": {}, "minecraft:movement": { "value": 0.25 }, "minecraft:navigation.walk": { "avoid_damage_blocks": true }, "minecraft:movement.basic": {}, "minecraft:jump.static": {}, "minecraft:can_climb": {}, "minecraft:collision_box": { "width": 0.6, "height": 1.8 }, "minecraft:physics": {}, "minecraft:despawn": { "despawn_from_distance": {} }, "minecraft:behavior.float": { "priority": 2 }, "minecraft:behavior.panic": { "priority": 3, "speed_multiplier": 1.25 }, "minecraft:behavior.random_stroll": { "priority": 7 }, "minecraft:behavior.look_at_player": { "priority": 8, "look_distance": 6.0 }, "minecraft:behavior.random_look_around": { "priority": 9 } }, "events": { "despawn": { "add": { "component_groups": [ "despawn" ] } } } } })");
 auto bp_hostile_entity = nlohmann::ordered_json::parse(R"({ "format_version": "1.18.2", "minecraft:entity": { "description": { "identifier": "namespace:entity", "is_spawnable": true, "is_summonable": true, "is_experimental": false }, "component_groups": { "despawn": { "minecraft:instant_despawn": {} } }, "components": { "minecraft:is_hidden_when_invisible": {}, "minecraft:type_family": { "family": [ "namespace", "entity", "mob" ] }, "minecraft:breathable": { "total_supply": 15, "suffocate_time": 0 }, "minecraft:nameable": {}, "minecraft:pushable": { "is_pushable": true, "is_pushable_by_piston": true }, "minecraft:conditional_bandwidth_optimization": {}, "minecraft:movement": { "value": 0.25 }, "minecraft:navigation.walk": { "avoid_damage_blocks": true }, "minecraft:movement.basic": {}, "minecraft:jump.static": {}, "minecraft:can_climb": {}, "minecraft:collision_box": { "width": 0.6, "height": 1.8 }, "minecraft:physics": {}, "minecraft:despawn": { "despawn_from_distance": {} }, "minecraft:attack": { "damage": 3 }, "minecraft:behavior.nearest_prioritized_attackable_target": { "priority": 0, "entity_types":[ { "filters": { "test": "is_family", "value": "player", "subject": "other" } } ] }, "minecraft:behavior.melee_attack": { "priority": 1, "speed_multiplier": 1.2, "reach_multiplier": 2 }, "minecraft:behavior.float": { "priority": 2 }, "minecraft:behavior.panic": { "priority": 3, "speed_multiplier": 1.25 }, "minecraft:behavior.random_stroll": { "priority": 7 }, "minecraft:behavior.look_at_player": { "priority": 8, "look_distance": 6.0 }, "minecraft:behavior.random_look_around": { "priority": 9 } }, "events": { "despawn": { "add": { "component_groups": [ "despawn" ] } } } } })");
 auto rp_entity_default = nlohmann::ordered_json::parse(R"({ "format_version": "1.18.0", "minecraft:client_entity": { "description": { "identifier": "namespace:name", "min_engine_version": "1.10.0", "materials": { "default": "entity_alphatest" }, "textures": { "default": "textures/entity/name/default" }, "geometry": { "default": "geometry.name" }, "render_controllers": [ "controller.render.default" ] } } })");
@@ -37,37 +37,36 @@ void entity::new_entity(int argc, char* argv[])
 	{
 		nlohmann::ordered_json bp_entity = result.count("enemy") ? bp_hostile_entity : result.count("passive") ? bp_passive_entity : bp_dummy_entity;
 
-		std::string filename = utilities::split(name, ':').back();
-		std::string entity_namespace = utilities::split(name, ':').front();
+		utilities::name ent_name = utilities::name(name);
 
-		bp_entity["minecraft:entity"]["description"]["identifier"] = name;
-		bp_entity["minecraft:entity"]["components"]["minecraft:type_family"]["family"] = {entity_namespace, filename};
-		file_manager::write_json_to_file(bp_entity, file_manager::get_bp_path() + "\\entities\\" + filename + ".json", result["indent"].as<int>());
+		bp_entity["minecraft:entity"]["description"]["identifier"] = ent_name.internal_name;
+		bp_entity["minecraft:entity"]["components"]["minecraft:type_family"]["family"] = { ent_name.space, ent_name.shortname};
+		file_manager::write_json_to_file(bp_entity, file_manager::get_bp_path() + "\\entities\\" + ent_name.filename + ".json", result["indent"].as<int>());
 
 		if (result.count("rp"))
 		{
 			nlohmann::ordered_json rp_entity = rp_entity_default;
-			rp_entity["minecraft:client_entity"]["description"]["identifier"] = name;
-			rp_entity["minecraft:client_entity"]["description"]["geometry"]["default"] = "geometry." + filename;
-			rp_entity["minecraft:client_entity"]["description"]["textures"]["default"] = "textures/entity/" + filename + "/default";
+			rp_entity["minecraft:client_entity"]["description"]["identifier"] = ent_name.internal_name;
+			rp_entity["minecraft:client_entity"]["description"]["geometry"]["default"] = "geometry." + ent_name.shortname;
+			rp_entity["minecraft:client_entity"]["description"]["textures"]["default"] = "textures/entity/" + ent_name.shortname + "/default";
 
-			file_manager::write_json_to_file(rp_entity, file_manager::get_rp_path() + "\\entity\\" + filename + ".entity.json", result["indent"].as<int>());
+			file_manager::write_json_to_file(rp_entity, file_manager::get_rp_path() + "\\entity\\" + ent_name.filename + ".entity.json", result["indent"].as<int>());
 		}
 
 		if (result.count("model"))
 		{
 			nlohmann::ordered_json rp_geo = rp_geo_default;
-			rp_geo["minecraft:geometry"][0]["description"]["identifier"] = "geometry." + filename;
+			rp_geo["minecraft:geometry"][0]["description"]["identifier"] = "geometry." + ent_name.shortname;
 
-			file_manager::write_json_to_file(rp_geo, file_manager::get_rp_path() + "\\models\\entity\\" + filename + ".geo.json", result["indent"].as<int>());
+			file_manager::write_json_to_file(rp_geo, file_manager::get_rp_path() + "\\models\\entity\\" + ent_name.filename + ".geo.json", result["indent"].as<int>());
 		}
 
 		if (result.count("lang"))
 		{
 			for (const auto& lang_file : result["lang"].as<std::vector<std::string>>())
 			{
-				file_manager::add_lang_entry("entity." + name + ".name=" + utilities::format_name(filename), lang_file, "entity names");
-				file_manager::add_lang_entry("item.spawn_egg." + name + ".name=Spawn " + utilities::format_name(filename), lang_file, "spawn eggs");
+				file_manager::add_lang_entry("entity." + ent_name.internal_name + ".name=" + utilities::format_name(ent_name.shortname), lang_file, "entity names");
+				file_manager::add_lang_entry("item.spawn_egg." + ent_name.internal_name + ".name=Spawn " + utilities::format_name(ent_name.shortname), lang_file, "spawn eggs");
 			}
 		}
 	}
@@ -283,7 +282,9 @@ void entity::animation(int argc, char* argv[])
 	std::vector<std::string> animations = result["animation"].as<std::vector<std::string>>();
 	for (auto& animation : animations)
 	{
-		animation = "animation." + animation;
+		utilities::name anim_name = utilities::name(animation);
+
+		animation = "animation." + anim_name.space;
 		if (result.count("controller"))
 		{
 			animation = "controller." + animation;
@@ -473,8 +474,9 @@ std::vector<entity::entity> entity::get_valid_entities(std::string directory, st
 			if (file_manager::read_file(file).find(family) != std::string::npos)
 			{
 				contains_family_keyword = true;
-				break;
+				continue;
 			}
+			contains_family_keyword = false;
 		}
 
 		if (contains_family_keyword)
@@ -565,30 +567,15 @@ entity::entity::entity(const nlohmann::ordered_json& entity, const std::string& 
 
 entity::entity::~entity() {}
 
-const bool entity::entity::contains_family_type(const std::string& family)
-{
-	// TODO Search file for string first, only serialize if string is found
-	if (entity_json["minecraft:entity"]["components"].contains("minecraft:type_family"))
-	{
-		if (std::find(entity_json["minecraft:entity"]["components"]["minecraft:type_family"]["family"].begin(), entity_json["minecraft:entity"]["components"]["minecraft:type_family"]["family"].end(), family) != std::end(entity_json["minecraft:entity"]["components"]["minecraft:type_family"]["family"]))
-		{
-			return true;
-		};
-	}
-	return false;
-}
-
 const bool entity::entity::contains_family_type(const std::vector<std::string>& families)
 {
-	for (const auto& family : families)
-	{
-		if (contains_family_type(family))
-		{
-			return true;
-		}
-	}
+	std::vector<std::string> ent_family = entity_json["minecraft:entity"]["components"]["minecraft:type_family"]["family"];
+	std::vector<std::string> search_family = families;
 
-	return false;
+	std::sort(ent_family.begin(), ent_family.end());
+	std::sort(search_family.begin(), search_family.end());
+
+	return std::includes(ent_family.begin(), ent_family.end(), search_family.begin(), search_family.end());
 }
 
 void entity::entity::add_property(const std::string& property_name, const std::string& type, const std::vector<std::string>& values, const std::string& default_value, const bool& sync)

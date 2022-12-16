@@ -30,31 +30,36 @@ void block::new_block(int argc, char* argv[])
 	{
 		nlohmann::ordered_json block_bp = bp_default_block;
 
-		std::string filename = utilities::split(name, ':').back();
+		utilities::name block_name = utilities::name(name);
 
 		if (result.count("table"))
 		{
-			block_bp["minecraft:block"]["components"]["minecraft:loot"] = "loot_tables/blocks/" + filename + ".json";
+			block_bp["minecraft:block"]["components"]["minecraft:loot"] = "loot_tables/blocks/" + block_name.filename + ".json";
 			nlohmann::ordered_json loot_table;
 			loot_table["pools"][0]["rolls"] = 1;
-			loot_table["pools"][0]["entries"][0] = { {"type", "item"}, {"name", name}, {"weight", 1} };
-			file_manager::write_json_to_file(loot_table, file_manager::get_bp_path() + "\\loot_tables\\blocks\\" + filename + ".json", result["indent"].as<int>());
+			loot_table["pools"][0]["entries"][0] = { {"type", "item"}, {"name", block_name.internal_name}, {"weight", 1} };
+			file_manager::write_json_to_file(loot_table, file_manager::get_bp_path() + "\\loot_tables\\blocks\\" + block_name.filename + ".json", result["indent"].as<int>());
 		}
 		block_bp["minecraft:block"]["components"]["minecraft:block_light_emission"] = std::clamp(result["emissive"].as<double>(), 0.0, 1.0);
-		block_bp["minecraft:block"]["description"]["identifier"] = name;
+		block_bp["minecraft:block"]["description"]["identifier"] = block_name.internal_name;
 
-		file_manager::write_json_to_file(block_bp, file_manager::get_bp_path() + "\\blocks\\" + filename + ".json", result["indent"].as<int>());
+		file_manager::write_json_to_file(block_bp, file_manager::get_bp_path() + "\\blocks\\" + block_name.filename + ".json", result["indent"].as<int>());
 
 		//modify textures/block_texture.json
 		nlohmann::ordered_json item_texture = file_manager::read_json_from_file(file_manager::get_rp_path() + "\\textures\\terrain_texture.json", rp_terrain_tex);
-		item_texture["texture_data"][filename] = { {"textures", "textures/blocks/" + filename} };
+		item_texture["texture_data"][block_name.shortname] = { {"textures", "textures/blocks/" + block_name.shortname} };
 		file_manager::write_json_to_file(item_texture, file_manager::get_rp_path() + "\\textures\\terrain_texture.json", result["indent"].as<int>());
+
+		//modify blocks.json
+		nlohmann::ordered_json blocks = file_manager::read_json_from_file(file_manager::get_rp_path() + "\\blocks.json", nlohmann::json::object());
+		blocks[block_name.shortname] = { {"textures", block_name.shortname}, {"sound", "obsidian"}};
+		file_manager::write_json_to_file(blocks, file_manager::get_rp_path() + "\\blocks.json", result["indent"].as<int>());
 
 		if (result.count("lang"))
 		{
 			for (const auto& lang_file : result["lang"].as<std::vector<std::string>>())
 			{
-				file_manager::add_lang_entry("tile." + name + ".name=" + utilities::format_name(filename), lang_file, "Block Names");
+				file_manager::add_lang_entry("tile." + block_name.internal_name + ".name=" + utilities::format_name(block_name.shortname), lang_file, "Block Names");
 			}
 		}
 	}

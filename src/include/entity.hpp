@@ -30,7 +30,6 @@ namespace entity
 
 		~entity();
 
-		const bool contains_family_type(const std::string& family);
 		const bool contains_family_type(const std::vector<std::string>& families);
 
 		void add_property(const std::string& property_name, const std::string& type, const std::vector<std::string>& values, const std::string& default_value, const bool& sync);

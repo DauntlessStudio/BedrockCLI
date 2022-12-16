@@ -78,7 +78,31 @@ void package_manager::recursive_download(const std::string& path)
 			nlohmann::ordered_json file_json = file_manager::read_json_from_file(path, web_json);
 			if (web_json != file_json)
 			{
-				web_json.merge_patch(file_json);
+				// handle advanced merging of common files
+				std::vector<std::string> common_files{"_ui_defs.json", "hud_screen.json"};
+				auto it = std::find(common_files.begin(), common_files.end(), utilities::split(path, "\\").back());
+				int index = std::distance(common_files.begin(), it);
+
+
+				std::vector<std::string> defs;
+
+				switch (index)
+				{
+				case 0: //_ui_defs.json
+					defs.reserve(web_json["ui_defs"].size() + file_json["ui_defs"].size());
+					defs.insert(defs.end(), web_json["ui_defs"].begin(), web_json["ui_defs"].end());
+					defs.insert(defs.end(), file_json["ui_defs"].begin(), file_json["ui_defs"].end());
+					web_json["ui_defs"] = defs;
+					break;
+				case 1: //hud_screen.json
+					file_json["root_panel"]["modifications"].push_back(web_json["root_panel"]["modifications"][0]);
+					file_json["hud_actionbar_text"] = web_json["hud_actionbar_text"];
+					web_json = file_json;
+					break;
+				default:
+					web_json.merge_patch(file_json);
+					break;
+				}
 			}
 			
 			file_manager::write_json_to_file(web_json, path);
