@@ -502,10 +502,10 @@ void entity::add_custom_weapon_entry(const std::string& weapon_name, const int& 
 	nlohmann::ordered_json rp_entity = file_manager::read_json_from_web_page("https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/entity/player.entity.json");
 	rp_entity = file_manager::read_json_from_file(file_manager::get_rp_path() + "\\entity\\player.entity.json", rp_entity);
 	rp_entity["minecraft:client_entity"]["description"]["animations"]["ctrl." + shortname] = "controller.animation.player.custom_weapons." + shortname;
-	rp_entity["minecraft:client_entity"]["description"]["animations"][shortname + ".idle.first_person"] = "animation.player." + shortname + "_weapon.idle.first_person";
-	rp_entity["minecraft:client_entity"]["description"]["animations"][shortname + ".idle.third_person"] = "animation.player." + shortname + "_weapon.idle.third_person";
-	rp_entity["minecraft:client_entity"]["description"]["animations"][shortname + ".attack.first_person"] = "animation.player." + shortname + "_weapon.attack.third_person";
-	rp_entity["minecraft:client_entity"]["description"]["animations"][shortname + ".attack.third_person"] = "animation.player." + shortname + "_weapon.attack.first_person";
+	rp_entity["minecraft:client_entity"]["description"]["animations"][shortname + ".idle.first_person"] = "animation.player." + shortname + ".idle.first_person";
+	rp_entity["minecraft:client_entity"]["description"]["animations"][shortname + ".idle.third_person"] = "animation.player." + shortname + ".idle.third_person";
+	rp_entity["minecraft:client_entity"]["description"]["animations"][shortname + ".attack.first_person"] = "animation.player." + shortname + ".attack.first_person";
+	rp_entity["minecraft:client_entity"]["description"]["animations"][shortname + ".attack.third_person"] = "animation.player." + shortname + ".attack.third_person";
 
 	//handle variables
 	std::vector<std::string> pre_anim = rp_entity["minecraft:client_entity"]["description"]["scripts"]["pre_animation"];
@@ -532,6 +532,7 @@ void entity::add_custom_weapon_entry(const std::string& weapon_name, const int& 
 	rp_anim_controller["animation_controllers"]["controller.animation.player.custom_weapon.select"]["states"]["no_weapon"]["transitions"].push_back({ { shortname, "v." + shortname } });
 	std::vector<nlohmann::ordered_json> transitions = rp_anim_controller["animation_controllers"]["controller.animation.player.custom_weapon.select"]["states"]["no_weapon"]["transitions"];
 	transitions.insert(transitions.begin(), { {{"no_weapon", "!v.has_custom_weapon"}} });
+	rp_anim_controller["animation_controllers"]["controller.animation.player.custom_weapon.select"]["states"][shortname]["animations"].push_back("ctrl." + shortname);
 	rp_anim_controller["animation_controllers"]["controller.animation.player.custom_weapon.select"]["states"][shortname]["transitions"] = transitions;
 
 	for (auto& item : rp_anim_controller["animation_controllers"]["controller.animation.player.custom_weapon.select"]["states"].items())
