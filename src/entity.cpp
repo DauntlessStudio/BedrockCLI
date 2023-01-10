@@ -522,7 +522,7 @@ void entity::add_custom_weapon_entry(const std::string& weapon_name, const int& 
 			index = i;
 		}
 	}
-	pre_anim.insert(pre_anim.begin() + index, "v." + shortname + " = q.is_item_name_any('slot.weapon.mainhand', 0, '" + weapon_name + "');");
+	pre_anim.insert(pre_anim.begin() + index, "v." + shortname + " = (q.get_equipped_item_name == '" + shortname + "');");
 	rp_entity["minecraft:client_entity"]["description"]["scripts"]["pre_animation"] = pre_anim;
 
 	file_manager::write_json_to_file(rp_entity, file_manager::get_rp_path() + "\\entity\\player.entity.json", indent);
@@ -562,11 +562,19 @@ void entity::add_custom_weapon_entry(const std::string& weapon_name, const int& 
 
 	// Player Animation
 	nlohmann::ordered_json rp_anim = file_manager::read_json_from_file(file_manager::get_rp_path() + "\\animations\\player.anim.json", rp_player_anim);
-	if(!rp_anim["animations"].contains("animation.player." + shortname + ".idle.first_person")) rp_anim["animations"]["animation.player." + shortname + ".idle.first_person"] = nlohmann::json::object();
-	if(!rp_anim["animations"].contains("animation.player." + shortname + ".idle.third_person")) rp_anim["animations"]["animation.player." + shortname + ".idle.third_person"] = nlohmann::json::object();
-	if(!rp_anim["animations"].contains("animation.player." + shortname + ".attack.first_person")) rp_anim["animations"]["animation.player." + shortname + ".attack.first_person"] = nlohmann::json::object();
-	if(!rp_anim["animations"].contains("animation.player." + shortname + ".attack.third_person")) rp_anim["animations"]["animation.player." + shortname + ".attack.third_person"] = nlohmann::json::object();
+	if(!rp_anim["animations"].contains("animation.player." + shortname + ".idle.first_person")) rp_anim["animations"]["animation.player." + shortname + ".idle.first_person"] = nlohmann::json::parse(R"({ "loop": true, "bones": { "rightArm": { "rotation": [ -90, 0, 0 ] } } })");
+	if(!rp_anim["animations"].contains("animation.player." + shortname + ".idle.third_person")) rp_anim["animations"]["animation.player." + shortname + ".idle.third_person"] = nlohmann::json::parse(R"({ "loop": true, "bones": { "rightArm": { "rotation": [ -30, 0, 0 ] } } })");
+	if(!rp_anim["animations"].contains("animation.player." + shortname + ".attack.first_person")) rp_anim["animations"]["animation.player." + shortname + ".attack.first_person"] = nlohmann::json::parse(R"({ "loop": "hold_on_last_frame", "animation_length": 0.5, "bones": { "rightArm": { "rotation": { "0.0": [ -90, 0, 0 ], "0.1": [ -100, 20, 0 ], "0.2": [ -100, -20, 0 ], "0.3": [ -90, 0, 0 ] }, "position": { "0.0": [0, 0, 0], "0.2": [10, 0, 0], "0.3": [0, 0, 0] } } } })");
+	if(!rp_anim["animations"].contains("animation.player." + shortname + ".attack.third_person")) rp_anim["animations"]["animation.player." + shortname + ".attack.third_person"] = nlohmann::json::parse(R"({ "loop": "hold_on_last_frame", "animation_length": 0.3, "bones" : { "rightArm": { "rotation": { "0.0": [ -90, 0, 0 ], "0.1": [ -100, 20, 0 ], "0.2": [ -100, -20, 0 ], "0.3": [ -90, 0, 0 ] } } } })");
 	file_manager::write_json_to_file(rp_anim, file_manager::get_rp_path() + "\\animations\\player.anim.json", indent);
+
+	// Weapon Animation
+	rp_anim = file_manager::read_json_from_file(file_manager::get_rp_path() + "\\animations\\weapon.anim.json", rp_player_anim);
+	if (!rp_anim["animations"].contains("animation.weapon." + shortname + ".idle.first_person")) rp_anim["animations"]["animation.weapon." + shortname + ".idle.first_person"] = nlohmann::json::object();
+	if (!rp_anim["animations"].contains("animation.weapon." + shortname + ".idle.third_person")) rp_anim["animations"]["animation.weapon." + shortname + ".idle.third_person"] = nlohmann::json::object();
+	if (!rp_anim["animations"].contains("animation.weapon." + shortname + ".attack.first_person")) rp_anim["animations"]["animation.weapon." + shortname + ".attack.first_person"] = nlohmann::json::object();
+	if (!rp_anim["animations"].contains("animation.weapon." + shortname + ".attack.third_person")) rp_anim["animations"]["animation.weapon." + shortname + ".attack.third_person"] = nlohmann::json::object();
+	file_manager::write_json_to_file(rp_anim, file_manager::get_rp_path() + "\\animations\\weapon.anim.json", indent);
 }
 
 entity::entity::entity() : entity_json(nlohmann::ordered_json()) {}
