@@ -129,6 +129,4 @@ utilities::name::name(const std::string input)
     }
 
     name::internal_name = name::space + ":" + name::shortname;
-
-    std::cout << " Directory: " << dir << " Namespace: " << space << " Filename: " << filename << " Shortname: " << shortname << " Internal: " << internal_name << std::endl;
 }
