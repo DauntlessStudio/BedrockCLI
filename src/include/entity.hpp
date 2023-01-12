@@ -56,5 +56,5 @@ namespace entity
 	};
 
 	std::vector<entity> get_valid_entities(std::string directory, std::vector<std::string> families, std::vector<std::string> names);
-	void add_custom_weapon_entry(const std::string& weapon_name, const int& indent);
+	void add_custom_item_entry(const std::string& weapon_name, const int& indent);
 }
