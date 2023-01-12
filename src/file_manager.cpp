@@ -428,6 +428,7 @@ void file_manager::write_file_from_web_page(const std::string& url, const std::s
 
 void file_manager::write_blank_png(const std::string& path, unsigned width, unsigned height, const bool overwrite)
 {
+	make_directory(path);
 	std::vector<unsigned char> png;
 
 	//generate some image;

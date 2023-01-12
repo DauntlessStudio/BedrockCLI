@@ -494,14 +494,14 @@ std::vector<entity::entity> entity::get_valid_entities(std::string directory, st
 	return entities;
 }
 
-void entity::add_custom_weapon_entry(const std::string& weapon_name, const int& indent)
+void entity::add_custom_item_entry(const std::string& item_name, const int& indent)
 {
-	std::string shortname = utilities::split(weapon_name, ':').back();
+	std::string shortname = utilities::split(item_name, ':').back();
 
 	// Player Entity
 	nlohmann::ordered_json rp_entity = file_manager::read_json_from_web_page("https://raw.githubusercontent.com/Mojang/bedrock-samples/main/resource_pack/entity/player.entity.json");
 	rp_entity = file_manager::read_json_from_file(file_manager::get_rp_path() + "\\entity\\player.entity.json", rp_entity);
-	rp_entity["minecraft:client_entity"]["description"]["animations"]["ctrl." + shortname] = "controller.animation.player.custom_weapons." + shortname;
+	rp_entity["minecraft:client_entity"]["description"]["animations"]["ctrl." + shortname] = "controller.animation.player.custom_items." + shortname;
 	rp_entity["minecraft:client_entity"]["description"]["animations"][shortname + ".idle.first_person"] = "animation.player." + shortname + ".idle.first_person";
 	rp_entity["minecraft:client_entity"]["description"]["animations"][shortname + ".idle.third_person"] = "animation.player." + shortname + ".idle.third_person";
 	rp_entity["minecraft:client_entity"]["description"]["animations"][shortname + ".attack.first_person"] = "animation.player." + shortname + ".attack.first_person";
@@ -509,11 +509,11 @@ void entity::add_custom_weapon_entry(const std::string& weapon_name, const int& 
 
 	//handle variables
 	std::vector<std::string> pre_anim = rp_entity["minecraft:client_entity"]["description"]["scripts"]["pre_animation"];
-	std::string has_custom = "v.has_custom_weapon = v." + shortname + ";";
+	std::string has_custom = "v.has_custom_item = v." + shortname + ";";
 	size_t index = 10;
 	for (size_t i = 0; i < pre_anim.size(); i++)
 	{
-		if (pre_anim[i].find("has_custom_weapon") != std::string::npos)
+		if (pre_anim[i].find("has_custom_item") != std::string::npos)
 		{
 			has_custom = pre_anim[i];
 			utilities::replace_all(has_custom, ";", "");
@@ -529,35 +529,35 @@ void entity::add_custom_weapon_entry(const std::string& weapon_name, const int& 
 
 	// Player Anim Controller
 	nlohmann::ordered_json rp_anim_controller = file_manager::read_json_from_file(file_manager::get_rp_path() + "\\animation_controllers\\player.ac.json", rp_player_ac_default);
-	rp_anim_controller["animation_controllers"]["controller.animation.player.custom_weapon.select"]["states"]["no_weapon"]["transitions"].push_back({ { shortname, "v." + shortname } });
-	std::vector<nlohmann::ordered_json> transitions = rp_anim_controller["animation_controllers"]["controller.animation.player.custom_weapon.select"]["states"]["no_weapon"]["transitions"];
-	transitions.insert(transitions.begin(), { {{"no_weapon", "!v.has_custom_weapon"}} });
-	rp_anim_controller["animation_controllers"]["controller.animation.player.custom_weapon.select"]["states"][shortname]["animations"].push_back("ctrl." + shortname);
-	rp_anim_controller["animation_controllers"]["controller.animation.player.custom_weapon.select"]["states"][shortname]["transitions"] = transitions;
+	rp_anim_controller["animation_controllers"]["controller.animation.player.custom_item.select"]["states"]["no_item"]["transitions"].push_back({ { shortname, "v." + shortname } });
+	std::vector<nlohmann::ordered_json> transitions = rp_anim_controller["animation_controllers"]["controller.animation.player.custom_item.select"]["states"]["no_item"]["transitions"];
+	transitions.insert(transitions.begin(), { {{"no_item", "!v.has_custom_item"}} });
+	rp_anim_controller["animation_controllers"]["controller.animation.player.custom_item.select"]["states"][shortname]["animations"].push_back("ctrl." + shortname);
+	rp_anim_controller["animation_controllers"]["controller.animation.player.custom_item.select"]["states"][shortname]["transitions"] = transitions;
 
-	for (auto& item : rp_anim_controller["animation_controllers"]["controller.animation.player.custom_weapon.select"]["states"].items())
+	for (auto& item : rp_anim_controller["animation_controllers"]["controller.animation.player.custom_item.select"]["states"].items())
 	{
-		if (item.key() != "no_weapon")
+		if (item.key() != "no_item")
 		{
-			size_t new_weapon = 0;
+			size_t new_item = 0;
 			auto temp_transitions = transitions;
 			for (size_t i = 0; i < transitions.size(); i++)
 			{
 				if (transitions[i].contains(item.key()))
 				{
-					new_weapon = i;
+					new_item = i;
 					break;
 				}
 			}
-			temp_transitions.erase(temp_transitions.begin() + new_weapon);
+			temp_transitions.erase(temp_transitions.begin() + new_item);
 			item.value()["transitions"] = temp_transitions;
 		}
 	}
 
-	std::string json_string = R"({ "initial_state": "idle", "states": { "idle": { "animations": [ { "example_weapon.idle.first_person": "v.is_first_person" }, { "example_weapon.idle.third_person": "!v.is_first_person" } ], "transitions": [ { "attack": "v.attack_time > 0" } ], "blend_transition": 0.2 }, "attack": { "animations": [ { "example_weapon.attack.first_person": "v.is_first_person" }, { "example_weapon.attack.third_person": "!v.is_first_person" } ], "transitions": [ { "idle": "q.any_animation_finished" } ], "blend_transition": 0.2 } } })";
-	utilities::replace_all(json_string, "example_weapon", shortname);
+	std::string json_string = R"({ "initial_state": "idle", "states": { "idle": { "animations": [ { "example_item.idle.first_person": "v.is_first_person" }, { "example_item.idle.third_person": "!v.is_first_person" } ], "transitions": [ { "attack": "v.attack_time > 0" } ], "blend_transition": 0.2 }, "attack": { "animations": [ { "example_item.attack.first_person": "v.is_first_person" }, { "example_item.attack.third_person": "!v.is_first_person" } ], "transitions": [ { "idle": "q.any_animation_finished" } ], "blend_transition": 0.2 } } })";
+	utilities::replace_all(json_string, "example_item", shortname);
 
-	rp_anim_controller["animation_controllers"]["controller.animation.player.custom_weapons." + shortname] = nlohmann::ordered_json::parse(json_string);
+	rp_anim_controller["animation_controllers"]["controller.animation.player.custom_items." + shortname] = nlohmann::ordered_json::parse(json_string);
 	file_manager::write_json_to_file(rp_anim_controller, file_manager::get_rp_path() + "\\animation_controllers\\player.ac.json", indent);
 
 	// Player Animation
@@ -569,12 +569,12 @@ void entity::add_custom_weapon_entry(const std::string& weapon_name, const int& 
 	file_manager::write_json_to_file(rp_anim, file_manager::get_rp_path() + "\\animations\\player.anim.json", indent);
 
 	// Weapon Animation
-	rp_anim = file_manager::read_json_from_file(file_manager::get_rp_path() + "\\animations\\weapon.anim.json", rp_player_anim);
-	if (!rp_anim["animations"].contains("animation.weapon." + shortname + ".idle.first_person")) rp_anim["animations"]["animation.weapon." + shortname + ".idle.first_person"] = nlohmann::json::object();
-	if (!rp_anim["animations"].contains("animation.weapon." + shortname + ".idle.third_person")) rp_anim["animations"]["animation.weapon." + shortname + ".idle.third_person"] = nlohmann::json::object();
-	if (!rp_anim["animations"].contains("animation.weapon." + shortname + ".attack.first_person")) rp_anim["animations"]["animation.weapon." + shortname + ".attack.first_person"] = nlohmann::json::object();
-	if (!rp_anim["animations"].contains("animation.weapon." + shortname + ".attack.third_person")) rp_anim["animations"]["animation.weapon." + shortname + ".attack.third_person"] = nlohmann::json::object();
-	file_manager::write_json_to_file(rp_anim, file_manager::get_rp_path() + "\\animations\\weapon.anim.json", indent);
+	rp_anim = file_manager::read_json_from_file(file_manager::get_rp_path() + "\\animations\\item.anim.json", rp_player_anim);
+	if (!rp_anim["animations"].contains("animation.item." + shortname + ".idle.first_person")) rp_anim["animations"]["animation.item." + shortname + ".idle.first_person"] = nlohmann::json::object();
+	if (!rp_anim["animations"].contains("animation.item." + shortname + ".idle.third_person")) rp_anim["animations"]["animation.item." + shortname + ".idle.third_person"] = nlohmann::json::object();
+	if (!rp_anim["animations"].contains("animation.item." + shortname + ".attack.first_person")) rp_anim["animations"]["animation.item." + shortname + ".attack.first_person"] = nlohmann::json::object();
+	if (!rp_anim["animations"].contains("animation.item." + shortname + ".attack.third_person")) rp_anim["animations"]["animation.item." + shortname + ".attack.third_person"] = nlohmann::json::object();
+	file_manager::write_json_to_file(rp_anim, file_manager::get_rp_path() + "\\animations\\item.anim.json", indent);
 }
 
 entity::entity::entity() : entity_json(nlohmann::ordered_json()) {}
