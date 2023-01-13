@@ -102,6 +102,7 @@ void entity::player_entity(int argc, char* argv[])
 
 		if (result.count("geo"))
 		{
+			rp_entity["minecraft:client_entity"]["description"]["scripts"]["variables"]["variable.attack_time"] = "public";
 			rp_entity["minecraft:client_entity"]["description"]["scripts"]["pre_animation"].push_back("v.has_custom_item = 0;");
 			rp_entity["minecraft:client_entity"]["description"]["scripts"]["pre_animation"].push_back("v.dampen_left_arm_swing  = 0;");
 			rp_entity["minecraft:client_entity"]["description"]["scripts"]["pre_animation"].push_back("v.dampen_right_arm_swing = 0;");
@@ -139,14 +140,6 @@ void entity::player_entity(int argc, char* argv[])
 		nlohmann::ordered_json bp_entity_json = file_manager::read_json_from_web_page("https://raw.githubusercontent.com/Mojang/bedrock-samples/main/behavior_pack/entities/player.json");
 		bp_entity_json = file_manager::read_json_from_file(file_manager::get_bp_path() + "\\entities\\player.json", bp_entity_json);
 		entity bp_entity = entity::entity(bp_entity_json, file_manager::get_bp_path() + "\\entities\\player.json");
-
-		if (result.count("geo"))
-		{
-			bp_entity.add_animation("controller.animation.player.on_attack", true);
-			animation::new_controller(std::vector<std::string>({ "@s toggle_is_attacking" }), std::vector<std::string>({ "@s toggle_is_attacking" }), std::vector<std::string>(), "variable.attack_time <= 0 && query.property('ldz:is_attacking')", "variable.attack_time > 0 && !query.property('ldz:is_attacking')", "attacking", "player.on_attack");
-			bp_entity.add_property("ldz:is_attacking", "bool", std::vector<std::string>(), "false", true);
-			bp_entity.add_property_event("ldz:is_attacking", "!query.property('ldz:is_attacking')", "toggle_is_attacking");
-		}
 
 		bp_entity.write_entity(result["indent"].as<int>());
 	}
@@ -563,7 +556,7 @@ void entity::add_custom_item_entry(const std::string& item_name, const int& inde
 		}
 	}
 
-	std::string json_string = R"({ "initial_state": "idle", "states": { "idle": { "animations": [ { "example_item.idle.first_person": "v.is_first_person" }, { "example_item.idle.third_person": "!v.is_first_person" } ], "transitions": [ { "attack": "v.attack_time > 0.5" } ], "blend_transition": 0.2 }, "attack": { "animations": [ { "example_item.attack.first_person": "v.is_first_person" }, { "example_item.attack.third_person": "!v.is_first_person" } ], "transitions": [ { "idle": "q.any_animation_finished" } ], "blend_transition": 0.2 } } })";
+	std::string json_string = R"({ "initial_state": "idle", "states": { "idle": { "animations": [ { "example_item.idle.first_person": "v.is_first_person" }, { "example_item.idle.third_person": "!v.is_first_person" } ], "transitions": [ { "attack": "v.attack_time > 0" } ], "blend_transition": 0.2 }, "attack": { "animations": [ { "example_item.attack.first_person": "v.is_first_person" }, { "example_item.attack.third_person": "!v.is_first_person" } ], "transitions": [ { "idle": "q.any_animation_finished" } ], "blend_transition": 0.2 } } })";
 	utilities::replace_all(json_string, "example_item", shortname);
 
 	rp_anim_controller["animation_controllers"]["controller.animation.player.custom_items." + shortname] = nlohmann::ordered_json::parse(json_string);
