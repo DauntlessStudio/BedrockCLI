@@ -76,3 +76,12 @@ Contributors names and contact info
     * --Family Arg is Now Mutually Inclusive
     * Supports Nested Files i.e. `bed nent -n foo/bar:entity`
     * Bug Fixes
+* 0.1.7
+    * Added Installer
+    * Updated Attachables Generation
+    * Bug Fixes
+* 0.1.8
+    * Renamed Weapon to Item
+* 0.1.9
+    * Finished Renaming Weapon to Item
+    * Enforced Attachables Framework
